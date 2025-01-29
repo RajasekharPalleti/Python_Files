@@ -107,9 +107,9 @@ def post_data_to_api(post_api_url, access_token_bearer, input_excel_file, output
 api_url = "https://cloud.cropin.in/services/farm/api/varieties"
 input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AddCropVarieties_Sakata.xlsx"
 output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AddCropVarietiesOutput.xlsx"
-auth_url = "https://sso.sg.cropin.in/auth/realms/sakataseeds/protocol/openid-connect/token"
+tenant_code = "sakataseeds"
 
-token = get_access_token(auth_url, "2024202501", "Cropin12345")
+token = get_access_token(tenant_code, "2024202501", "Cropin12345")
 if token:
     post_data_to_api(api_url, token, input_excel, output_excel)
 else:

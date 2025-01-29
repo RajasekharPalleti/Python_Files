@@ -126,15 +126,14 @@ def post_data_to_api(get_api_url, put_api_url, token, input_file, output_file, d
 
 # Main program
 if __name__ == "__main__":
-    auth_url = "https://sso.sg.cropin.in/auth/realms/asp/protocol/openid-connect/token"
     get_api_url = "https://cloud.cropin.in/services/farm/api/plan-types"
     put_api_url = "https://cloud.cropin.in/services/farm/api/plans/non-pops/ca"
     input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\API_Plan_Template.xlsx"  # Replace with your input Excel file name
     output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\API_Plan_Template_output.xlsx"  # Output Excel file to store the results
-
+    tenant_code = "asp"
     # Retrieve access token
     print("Retrieving access token")
-    token = get_access_token(auth_url, "9649964096", "123456")
+    token = get_access_token(tenant_code, "9649964096", "123456")
 
     if token:
         print("Access token retrieved successfully")
