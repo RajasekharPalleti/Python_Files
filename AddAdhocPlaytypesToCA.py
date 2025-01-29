@@ -1,3 +1,6 @@
+#Author : Rajasekhar Palleti
+#QA
+
 import json
 import pandas as pd
 import requests

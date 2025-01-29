@@ -1,3 +1,6 @@
+#Author : Rajasekhar Palleti
+#QA
+
 import requests
 
 # Define constants for fixed values
