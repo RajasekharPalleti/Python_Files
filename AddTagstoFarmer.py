@@ -43,10 +43,24 @@ def post_data_to_api(api_url, token, input_excel, output_excel):
             print(f"Row = {row}")
             print(f"Getting asset details for: {farmer_id}")
 
-            # Update/Insert tags in data section
+            # # Update/Insert tags in data section
+            # if "data" in farmer_data and isinstance(farmer_data["data"], dict):
+            #     farmer_data["data"]["tags"] = tags
+            #     print(f"Tags is Inserted/modified for: {farmer_id}")
+            # else:
+            #     sheet.cell(row=row, column=status_col, value="Failed: No data key in farmer data")
+            #     continue
+
+            # Update/Insert tags in data section with check tags is present or not
             if "data" in farmer_data and isinstance(farmer_data["data"], dict):
-                farmer_data["data"]["tags"] = tags
-                print(f"Tags is Inserted/modified for: {farmer_id}")
+                if "tags" in farmer_data["data"] and isinstance(farmer_data["data"]["tags"], list):
+                    # Append new tags to existing tags list
+                    farmer_data["data"]["tags"].extend(tags)
+                else:
+                    # Create a new tags key if not present
+                    farmer_data["data"]["tags"] = tags
+
+                print(f"Tags inserted/modified for: {farmer_id}")
             else:
                 sheet.cell(row=row, column=status_col, value="Failed: No data key in farmer data")
                 continue
