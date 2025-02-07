@@ -98,7 +98,6 @@ if __name__ == "__main__":
     output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\FarmerTagsInsertUpdated.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/farmers"
 
-
     # Retrieve access token
     print("Retrieving access token")
     token = get_access_token(tenant_code, "9649964096", "123456")
