@@ -1,6 +1,6 @@
 from GetAuthtoken import get_access_token
-auth_url = "https://sso.sg.cropin.in/auth/realms/asp/protocol/openid-connect/token"
+tenant_code = "asp"
 
 # Call the function
-token = get_access_token(auth_url, 9649964096, 123456)
+token = get_access_token(tenant_code, 9649964096, 123456)
 print(token)
