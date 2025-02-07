@@ -13,7 +13,7 @@ tags = [ {
       "clientId" : "b5ddbbf5-5751-4db0-aded-f8426cda2cc5"
     } ]
 
-def post_data_to_api(get_api_url ,put_api_url, token, input_excel, output_excel):
+def post_data_to_api(api_url, token, input_excel, output_excel):
     # Set up the headers using the retrieved token
     headers = {
         "Authorization": f"Bearer {token}"
@@ -37,7 +37,7 @@ def post_data_to_api(get_api_url ,put_api_url, token, input_excel, output_excel)
 
         try:
             # GET API call to retrieve farmer data
-            get_response = requests.get(f"{get_api_url}/{farmer_id}", headers=headers)
+            get_response = requests.get(f"{api_url}/{farmer_id}", headers=headers)
             get_response.raise_for_status()
             farmer_data = get_response.json()
             print(f"Row = {row}")
@@ -59,7 +59,7 @@ def post_data_to_api(get_api_url ,put_api_url, token, input_excel, output_excel)
             }
 
             # PUT API call to update the farmer data
-            put_response = requests.put(put_api_url, headers=headers, files=multipart_data)
+            put_response = requests.put(api_url, headers=headers, files=multipart_data)
             put_response.raise_for_status()
 
             # Log success in Excel
@@ -82,8 +82,7 @@ if __name__ == "__main__":
     tenant_code = "asp"
     input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\FarmerTagsInsert.xlsx"
     output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\FarmerTagsInsertUpdated.xlsx"
-    get_api_url = "https://cloud.cropin.in/services/farm/api/farmers"
-    put_api_url = "https://cloud.cropin.in/services/farm/api/farmers"
+    api_url = "https://cloud.cropin.in/services/farm/api/farmers"
 
 
     # Retrieve access token
@@ -92,6 +91,6 @@ if __name__ == "__main__":
 
     if token:
         print("Access token retrieved successfully")
-        post_data_to_api(get_api_url,put_api_url, token, input_excel, output_excel)
+        post_data_to_api(api_url, token, input_excel, output_excel)
     else:
         print("Failed to retrieve access token. Process terminated.")
