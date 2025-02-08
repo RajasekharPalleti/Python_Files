@@ -6,6 +6,8 @@ import time
 file_path = "C:\\Users\\rajasekhar.palleti\\Downloads\\assets_data.xlsx"
 # Access token
 access_token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJLMDB0YV9CX3Q0Z3NUUDN5dngtUlpmTHZaZGNkQnJfSmwzQ0JVbEtXREdzIn0.eyJqdGkiOiIwM2ZkMDdmNS04MjI1LTRlNDktOWU2MS1lM2ZmZGMyMjRlMmEiLCJleHAiOjE3MzcxODk1MTcsIm5iZiI6MCwiaWF0IjoxNzM1ODkzNTE3LCJpc3MiOiJodHRwczovL3Nzby5zZy5jcm9waW4uaW4vYXV0aC9yZWFsbXMvY2luaWpoIiwiYXVkIjpbInJlc291cmNlX3NlcnZlciIsImFjY291bnQiXSwic3ViIjoiOGZkZDljZmQtZDM1ZC00MTNkLWExMjAtNDkxMzZlNDkyNjc5IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoid2ViX2FwcCIsIm5vbmNlIjoiX2NsaWVudF93ZWJfYXBwIiwiYXV0aF90aW1lIjoxNzM1ODkzNTE3LCJzZXNzaW9uX3N0YXRlIjoiYjk4Njk4NTItMzEwNC00YjQ1LThkZWQtZjczMDFiMDRhOTkyIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVzb3VyY2Vfc2VydmVyIjp7InJvbGVzIjpbIlJPTEVfQURNSU5fMTM1MSJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgbWljcm9wcm9maWxlLWp3dCBhZGRyZXNzIHBob25lIHByb2ZpbGUgZW1haWwgb2ZmbGluZV9hY2Nlc3MiLCJ1c2VyX3JvbGUiOlsiUk9MRV9BRE1JTl8xMzUxIl0sInVwbiI6IjU5NTk1OTU5NTkiLCJlbWFpbF92ZXJpZmllZCI6ZmFsc2UsImFkZHJlc3MiOnt9LCJuYW1lIjoiUyBQYXVsIiwiZ3JvdXBzIjpbIm9mZmxpbmVfYWNjZXNzIiwidW1hX2F1dGhvcml6YXRpb24iXSwicHJlZmVycmVkX3VzZXJuYW1lIjoiNTk1OTU5NTk1OSIsImdpdmVuX25hbWUiOiJTIFBhdWwiLCJ0ZW5hbnQiOiJjaW5pamgiLCJlbWFpbCI6InNwYXVsQHRhdGF0cnVzdHMub3JnIn0.YzhQ_l5UMcyMxRxnxRJDlJjLssY9M8KLgPKlbleo8lRJg3zTcz5552FHtu5PId5z-nWtJDHGLGCL3MD9F28G5hPDFooC9ZCE-nUuxHzhiyL4zmRieK1qSZDu7PHjC-7XEMD-W1fkIzsBcj9jnkmIDAt1t6zAtvDvGAZo-z7VNbJ_A8Jn-3C4_gMjT_F2KBUvKZ2uX31XtdXZM17I0Bf0NTcVa3S7yp_IRsBZsEpYYeXkgeQ5keuNxjMPAieAlKdtzhMopP3cu-59w4tRkf5DbSPnLtuBz_mIFYJAGbV-pFenInRb7MsyexnezIwUjAoxUEWr5Qv0BTyEjsfcsqh28Q"
+# Define API URL
+api_url = "https://cloud.cropin.in/services/farm/api/assets/bulk"
 
 # Function to send DELETE requests in bulk
 def delete_assets(file_path, access_token):
@@ -23,9 +25,6 @@ def delete_assets(file_path, access_token):
 
     # Extract asset IDs
     asset_ids = df['assetIDs'].tolist()
-
-    # Define API URL
-    api_url = "https://cloud.cropin.in/services/farm/api/assets/bulk"
 
     # Define headers with access token
     headers = {
@@ -66,7 +65,7 @@ def delete_assets(file_path, access_token):
 
         print(f"Iteration {iteration}: Completed processing for chunk: {ids_param}")
 
-        # Wait for 1 seconds before the next iteration
+        # Wait for 1 second before the next iteration
         time.sleep(1)
 
     print("Processing complete. Results saved to", file_path)
