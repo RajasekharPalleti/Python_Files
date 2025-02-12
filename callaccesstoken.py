@@ -2,8 +2,8 @@
 
 from GetAuthtoken import get_access_token
 
-tenant_code = "campogto"
+tenant_code = "asp"
 
 # Call the function
-token = get_access_token(tenant_code, "5252525255", "cropin123")
+token = get_access_token(tenant_code, "9649964096", "123456")
 print(token)

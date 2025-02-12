@@ -1,3 +1,5 @@
+#Author : Rajasekhar Palleti
+
 import json
 import requests
 import openpyxl
@@ -32,7 +34,7 @@ def fetch_tags(token, tags_api_url, required_tags):
             print(f"⏳ Adding missing tags: {missing_tags}")
             for tag in missing_tags:
                 tag_payload = {"name": tag, "id": None}
-                post_response = requests.post("https://cloud.cropin.in/services/farm/api/tags",
+                post_response = requests.post(post_tag_url,
                                               headers=headers,
                                               json=tag_payload)
                 if post_response.status_code == 201:
@@ -127,11 +129,13 @@ if __name__ == "__main__":
     output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\FarmerTagsInsertUpdated.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/farmers"
     tags_api_url = "https://cloud.cropin.in/services/farm/api/tags?size=5000"
+    post_tag_url = "https://cloud.cropin.in/services/farm/api/tags"
 
     # Please update these tags by required tags when ever you run this script
     required_tags = ["raja cropin connect tag", "raja cropin connect tag 2", "raja cropin connect tag 3"]
 
     print("⏳ Retrieving access token...")
+    # Pass the tenant_code, username, password here
     token = get_access_token("asp", "9649964096", "123456")
 
     if token:
