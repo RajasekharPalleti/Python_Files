@@ -1,3 +1,5 @@
+#Author: Rajasekhar Palleti
+
 import pandas as pd
 import requests
 import time
@@ -14,17 +16,18 @@ else:
     exit()
 
 # File path and sheet name
-file_path = r"C:\Users\rajasekhar.palleti\Downloads\PR_and_weather_enablement.xlsx"
+file_path = r"C:\Users\rajasekhar.palleti\Downloads\Fourth Batch PR Enablement.xlsx"
 sheet_name = "Sheet1"  # Change this to your actual sheet name
 
 # Load Excel file with the specific sheet
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 
-# Ensure necessary columns exist
+# Ensure necessary columns exist if not add
 columns_to_check = ["status", "srPlotid", "Plot_risk_response", "Weather_response"]
 for col in columns_to_check:
     if col not in df.columns:
         df[col] = ""
+    df[col] = df[col].astype(str)  # Convert to string to prevent dtype issues
 
 # API endpoints
 plot_risk_url = "https://cloud.cropin.in/services/farm/api/croppable-areas/plot-risk/batch"
@@ -52,7 +55,7 @@ def extract_sr_plot_id(response_json):
 
 
 # Iterate over rows
-for index, row in df.iterrows():
+for index, row in df.iloc[:].iterrows():
     try:
         croppable_area_id = str(row.iloc[0]).strip()
         farmer_id = str(row.iloc[1]).strip()
@@ -63,6 +66,7 @@ for index, row in df.iterrows():
         plot_risk_payload = [{"croppableAreaId": croppable_area_id, "farmerId": farmer_id}]
         sustainability_payload = [croppable_area_id]
 
+        # Send Plot Risk API request
         print(f"📡 Sending Plot Risk API request for CroppableAreaId: {croppable_area_id}")
         try:
             plot_risk_response = requests.post(plot_risk_url, json=plot_risk_payload, headers=headers)
@@ -74,10 +78,12 @@ for index, row in df.iterrows():
         except requests.exceptions.RequestException as req_err:
             error_message = str(req_err)
             df.at[index, "Plot_risk_response"] = error_message
+            df.at[index, "srPlotid"] = "N/A"
             print(f"❌ Plot Risk API request failed: {error_message}")
 
         time.sleep(0.5)
 
+        # Send Weather API request
         print(f"📡 Sending Weather API request for CroppableAreaId: {croppable_area_id}")
         try:
             sustainability_response = requests.post(sustainability_url, json=sustainability_payload, headers=headers)
