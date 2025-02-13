@@ -6,9 +6,13 @@ from GetAuthtoken import get_access_token
 
 
 # Function to process data and make API requests
-def post_data_to_api(user_api_url, farmer_api_url, token, input_excel, sheet_name, output_excel):
+def post_data_to_api(user_api_url, farmer_api_url, token, excel_sheet, sheet_name):
     print("📂 Loading input Excel file...")
-    df = pd.read_excel(input_excel, sheet_name=sheet_name)
+    df = pd.read_excel(excel_sheet, sheet_name=sheet_name)
+
+    def get_value(cell):
+        """Returns None if the cell is empty or NaN, otherwise returns the string value."""
+        return None if pd.isna(cell) or str(cell).strip() == "" else cell
 
     # Ensure necessary columns exist
     columns_to_check = ["Status", "Response", "user_response", "farmer_response"]
@@ -17,11 +21,19 @@ def post_data_to_api(user_api_url, farmer_api_url, token, input_excel, sheet_nam
             df[col] = ""
         df[col] = df[col].astype(str)
 
-    # Set headers for API requests
-    headers = {'Authorization': f'Bearer {token}'}
-    index: int
     for index, row in df.iterrows():
         print(f"🔄 Processing row {index + 1}...")
+
+        # Extract firstName and validate
+        first_name = get_value(row.iloc[0])
+        if not first_name:
+            print(f"⚠️ Row {index + 1} skipped due to invalid farmer name.")
+            df.at[index, 'Response'] = "invalid farmer name and creation is skipped"
+            df.at[index, 'Status'] = "⚠️ Skipped"
+            continue
+
+        # Set headers for API requests
+        headers = {'Authorization': f'Bearer {token}'}
 
         # Extract user IDs and clean up data
         userIds = str(row.iloc[4]).strip()
@@ -31,6 +43,13 @@ def post_data_to_api(user_api_url, farmer_api_url, token, input_excel, sheet_nam
             userIds = userIds.split(',')
         else:
             userIds = []
+
+        # Skip row execution if user list is empty
+        if not userIds:
+            print(f"⚠️ Row {index + 1} skipped due to empty user list.")
+            df.at[index, 'Response'] = "Skipped due to empty user list"
+            df.at[index, 'Status'] = "⚠️ Skipped"
+            continue
 
         user_api_failed = False
         farmer_api_failed = False
@@ -61,42 +80,45 @@ def post_data_to_api(user_api_url, farmer_api_url, token, input_excel, sheet_nam
         farmer_payload = {
             "status": "DISABLE",
             "data": {
-                "mobileNumber": row.iloc[3],
+                "mobileNumber": get_value(row.iloc[3]),
                 "countryCode": f"+{str(row.iloc[2]).strip()}",
-                "languagePreference": row.iloc[5],
-                "farmeradditionl2": "A",
+                "languagePreference": get_value(row.iloc[5]),
+                "farmeradditionl3": "A",
                 "farmeradditionl4": "A",
-                "farmeradditionl3": "A"
+                "farmeradditionl2": "A",
+                # "registrationDate": get_value(row.iloc[16]),
+                # "gdprConsent": get_value(row.iloc[17]),
+                # "ageRange": get_value(row.iloc[15])
             },
             "images": {},
             "declaredArea": {
                 "enableConversion": "true",
-                "unit": "ACRE"
+                "unit": "HECTARE"
             },
-            "firstName": row.iloc[0],
-            "farmerCode": row.iloc[1],
+            "firstName": first_name,
+            "farmerCode": get_value(row.iloc[1]),
             "assignedTo": user_data_list,
-            "gender": "MALE",
+            "gender": get_value(row.iloc[14]),
             "address": {
-                "country": row.iloc[6],
-                "formattedAddress": row.iloc[7],
+                "country": get_value(row.iloc[6]),
+                "formattedAddress": get_value(row.iloc[7]),
                 "houseNo": None,
                 "buildingName": None,
-                "administrativeAreaLevel1": row.iloc[8],
+                "administrativeAreaLevel1": get_value(row.iloc[8]),
                 "locality": None,
-                "administrativeAreaLevel2": None,
-                "sublocalityLevel1": row.iloc[9],
+                "administrativeAreaLevel2": get_value(row.iloc[9]),
+                "sublocalityLevel1": get_value(row.iloc[10]),
                 "sublocalityLevel2": None,
                 "landmark": None,
-                "postalCode": row.iloc[10],
-                "placeId": None,
-                "latitude": row.iloc[11],
-                "longitude": row.iloc[12]
+                "postalCode": get_value(row.iloc[11]),
+                "placeId": "ChIJ6Yuupv8VphkRB5evs7ThIW0",
+                "latitude": get_value(row.iloc[12]),
+                "longitude": get_value(row.iloc[13])
             },
-             "isGDPRCompliant": "true"
+            # "isGDPRCompliant": "true"
         }
 
-        #Converting farmer_payload to multipart dto
+        # Converting farmer_payload to multipart dto
         multipart_data = {"dto": (None, json.dumps(farmer_payload), "application/json")}
 
         # Send POST request to farmer API
@@ -123,24 +145,36 @@ def post_data_to_api(user_api_url, farmer_api_url, token, input_excel, sheet_nam
         # Wait for 0.5 seconds for next iteration
         time.sleep(5)
 
-    # Save output to Excel file
-    print("💾 Saving output Excel file...")
-    df.to_excel(output_excel, index=False)
-    print("✅ Process completed! Output saved.")
+    # Function to save Excel file safely
+    def save_output_file(df, excel_sheet, attempt=1):
+        try:
+            df.to_excel(excel_sheet, index=False)
+            print(f"💾 Output file saved successfully at attempt {attempt}")
+        except Exception as err:
+            if attempt < 3:  # Retry up to 3 times
+                print(f"⚠️ Error saving output file: Please close any open instances of the file {err}. Retrying in 30 seconds...")
+                time.sleep(30)
+                save_output_file(df, excel_sheet, attempt + 1)
+            else:
+                print(f"❌ Failed to save output file after 3 attempts. Please close any open instances of the file.")
 
+    # Save to Excel file
+    print("💾 Saving Excel file...")
+    save_output_file(df, excel_sheet)
+    print("✅ Process completed! Output saved.")
 
 # Inputs and configurations
 farmer_api_url = "https://cloud.cropin.in/services/farm/api/farmers"
 user_api_url = "https://cloud.cropin.in/services/user/api/users"
-input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\agraTenantsFarmerUploadTemplate.xlsx"
+excel_sheet = "C:\\Users\\rajasekhar.palleti\\Downloads\\agraTenantsFarmerUploadTemplate.xlsx"
 sheet_name = "Sheet1"
-output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\agraTenantsFarmerUploadTemplateUpdated.xlsx"
 tenant_code = "asp"
+environment = "prod1"
 
 # Get authentication token
 print("🌍 Fetching Auth_Token......")
-token = get_access_token(tenant_code, "9649964096", "123456")
+token = get_access_token(tenant_code, "9649964096", "123456", environment)
 if token:
-    post_data_to_api(user_api_url, farmer_api_url, token, input_excel, sheet_name, output_excel)
+    post_data_to_api(user_api_url, farmer_api_url, token, excel_sheet, sheet_name)
 else:
     print("❌ Failed to retrieve access token. Process terminated.")
