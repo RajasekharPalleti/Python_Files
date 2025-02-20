@@ -4,7 +4,7 @@ import json
 import requests
 import openpyxl
 import time
-import sys  # Import sys to exit the script
+import sys  
 from GetAuthtoken import get_access_token
 
 
@@ -130,13 +130,14 @@ if __name__ == "__main__":
     api_url = "https://cloud.cropin.in/services/farm/api/farmers"
     tags_api_url = "https://cloud.cropin.in/services/farm/api/tags?size=5000"
     post_tag_url = "https://cloud.cropin.in/services/farm/api/tags"
+    environment = "prod1"
 
     # Please update these tags by required tags when ever you run this script
     required_tags = ["raja cropin connect tag", "raja cropin connect tag 2", "raja cropin connect tag 3"]
 
     print("⏳ Retrieving access token...")
     # Pass the tenant_code, username, password here
-    token = get_access_token("asp", "9649964096", "123456")
+    token = get_access_token("asp", "9649964096", "123456", environment)
 
     if token:
         print("✅ Access token retrieved successfully")
