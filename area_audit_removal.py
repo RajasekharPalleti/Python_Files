@@ -11,7 +11,8 @@ df = pd.read_excel(FILE_PATH)
 # Ensure necessary columns exist
 for col in ["status", "Response"]:
     if col not in df.columns:
-        df[col] = ""
+        df[col] = ""  # Add missing columns
+    df[col] = df[col].astype(str)  # Explicitly convert to string to avoid dtype issues
 
 # Authorization Token
 TOKEN = "your_actual_token_here"
@@ -20,27 +21,26 @@ HEADERS = {
     "Content-Type": "application/json"
 }
 
-# Check if 'ca_id' column exists
-if "ca_id" not in df.columns:
-    print("Error: 'ca_id' column is missing in the Excel file.")
-    exit()
+# Check if the 'ca_id' column exists
+# if "ca_id" not in df.columns:
+#     print("Error: 'ca_id' column is missing in the Excel file.")
+#     exit()
 
-# Define range for iteration
-start_index = 10  # Adjust as needed
-end_index = 50    # Adjust as needed
-
-# Counters for tracking success and failure
+# Iterate over each row and process CA IDs
 success_count, failure_count = 0, 0
 
-# Iterate over the specified range
-for index, row in df.iloc[start_index:end_index].iterrows():
-    croppable_area_id = str(row.iloc[0]).strip()  # Extract CA ID from column 0
+# Define range for iteration
+start_index = 1  # Should be at least 1 which starts from 2nd row as headers in first row
+end_index = 50  # Suppose last row is on 100, we need to pass 99 here
 
-    if not croppable_area_id:  # Skip empty CA IDs
+for index, row in df.iloc[start_index:end_index].iterrows():
+    ca_id = str(row["ca_id"]).strip()
+
+    if not ca_id:  # Skip empty CA IDs
         continue
 
-    url = f"https://cloud.cropin.in/services/farm/api/croppable-areas/{croppable_area_id}/area-audit"
-    print(f"Processing {croppable_area_id}: {url}")
+    url = f"https://cloud.cropin.in/services/farm/api/croppable-areas/{ca_id}/area-audit"
+    print(f"Processing {ca_id}: {url}")
 
     try:
         response = requests.delete(url, headers=HEADERS)
@@ -54,10 +54,10 @@ for index, row in df.iloc[start_index:end_index].iterrows():
             df.at[index, "Response"] = response.text
             failure_count += 1
 
-        print(f"{croppable_area_id}: Status {status_code}, {'Success' if status_code == 200 else 'Failed'}")
+        print(f"{ca_id}: Status {status_code}, {'Success' if status_code == 200 else 'Failed'}")
 
     except requests.RequestException as e:
-        print(f"Error processing {croppable_area_id}: {e}")
+        print(f"Error processing {ca_id}: {e}")
         df.at[index, "status"] = "Error"
         df.at[index, "Response"] = str(e)
         failure_count += 1

@@ -10,7 +10,7 @@ CLIENT_SECRET = "resource_server"  # Replace with your actual client secret
 
 
 def get_access_token(tenant_code, username, password, environment):
-    """Fetch the access token using the environment, username, and password.
+    """Fetch the access token using the tenant_code, username, password and environment.
 
     Args:
         tenant_code (str): The tenant code for the authentication.
