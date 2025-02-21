@@ -1,70 +1,115 @@
-import requests
+#Author: Rajasekhar Palleti
+
 import pandas as pd
+import requests
 import time
+import json
+from GetAuthtoken import get_access_token  # Ensure this module is available
 
-# Define file path
-FILE_PATH = "C:/Users/ruchitha.p/Desktop/SmartFarmAPI_Automation/Excel_Files/Area_Audit_Removal.xlsx"
+# Get access token
+token = get_access_token("solidaridad", "9876543210", "Cropin@123", "prod1")
 
-# Load the Excel file into a DataFrame
-df = pd.read_excel(FILE_PATH)
+if token:
+    print("✅ Access token retrieved successfully.")
+else:
+    print("❌ Failed to retrieve access token. Process terminated.")
+    exit()
 
-# Ensure necessary columns exist
-for col in ["status", "Response"]:
+# File path and sheet name
+file_path = r"C:\Users\rajasekhar.palleti\Downloads\PR_for_Solidaridad_Details_2025_02_21.xlsx"
+sheet_name = "result"  # Change this to your actual sheet name
+
+# Load Excel file with the specific sheet
+df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+# Ensure necessary columns exist if not add
+columns_to_check = ["status", "srPlotid", "Plot_risk_response", "Weather_response"]
+for col in columns_to_check:
     if col not in df.columns:
         df[col] = ""
+    df[col] = df[col].astype(str)  # Convert to string to prevent dtype issues
 
-# Authorization Token
-TOKEN = "your_actual_token_here"
-HEADERS = {
-    "Authorization": f"Bearer {TOKEN}",
+# API endpoints
+plot_risk_url = "https://cloud.cropin.in/services/farm/api/croppable-areas/plot-risk/batch"
+# sustainability_url = "https://cloud.cropin.in/services/farm/api/croppable-areas/sustainability/batch?features=WEATHER"
+
+# API Headers with Authorization Token
+headers = {
+    "Authorization": f"Bearer {token}",
     "Content-Type": "application/json"
 }
 
-# Check if 'ca_id' column exists
-if "ca_id" not in df.columns:
-    print("Error: 'ca_id' column is missing in the Excel file.")
-    exit()
 
-# Define range for iteration
-start_index = 10  # Adjust as needed
-end_index = 50    # Adjust as needed
+# Function to extract srPlotId from known response structures
+def extract_sr_plot_id(response_json):
+    if "srPlotDetails" in response_json:
+        for details in response_json["srPlotDetails"].values():
+            return details.get("srPlotId")
 
-# Counters for tracking success and failure
-success_count, failure_count = 0, 0
+    for key, value in response_json.items():
+        if isinstance(value, list):
+            for item in value:
+                if "srPlotId" in item:
+                    return item["srPlotId"]
+    return "N/A"
 
-# Iterate over the specified range
-for index, row in df.iloc[start_index:end_index].iterrows():
-    croppable_area_id = str(row.iloc[0]).strip()  # Extract CA ID from column 0
 
-    if not croppable_area_id:  # Skip empty CA IDs
-        continue
-
-    url = f"https://cloud.cropin.in/services/farm/api/croppable-areas/{croppable_area_id}/area-audit"
-    print(f"Processing {croppable_area_id}: {url}")
-
+# Iterate over rows
+for index, row in df.iloc[:].iterrows():
     try:
-        response = requests.delete(url, headers=HEADERS)
-        status_code = response.status_code
+        croppable_area_id = str(row.iloc[0]).strip()
+        # farmer_id = str(row.iloc[1]).strip()
 
-        if status_code == 200:
-            df.at[index, "status"] = "Success"
-            success_count += 1
+        print(f"🔄 Processing row {index + 1}: CroppableAreaId = {croppable_area_id}")
+
+        # Construct payloads
+        plot_risk_payload = [{"croppableAreaId": croppable_area_id, "farmerId": None}]
+        # sustainability_payload = [croppable_area_id]
+
+        # Send Plot Risk API request
+        print(f"📡 Sending Plot Risk API request for CroppableAreaId: {croppable_area_id}")
+        try:
+            plot_risk_response = requests.post(plot_risk_url, json=plot_risk_payload, headers=headers)
+            plot_risk_response.raise_for_status()  # Raise error for HTTP failures
+            plot_risk_json = plot_risk_response.json()
+            df.at[index, "Plot_risk_response"] = json.dumps(plot_risk_json)
+            df.at[index, "srPlotid"] = extract_sr_plot_id(plot_risk_json)
+            print(f"✅ Extracted srPlotId: {df.at[index, 'srPlotid']}")
+        except requests.exceptions.RequestException as req_err:
+            error_message = str(req_err)
+            df.at[index, "Plot_risk_response"] = error_message
+            df.at[index, "srPlotid"] = "N/A"
+            print(f"❌ Plot Risk API request failed: {error_message}")
+
+        time.sleep(0.5)
+
+        # # Send Weather API request
+        # print(f"📡 Sending Weather API request for CroppableAreaId: {croppable_area_id}")
+        # try:
+        #     sustainability_response = requests.post(sustainability_url, json=sustainability_payload, headers=headers)
+        #     sustainability_response.raise_for_status()
+        #     sustainability_json = sustainability_response.json()
+        #     df.at[index, "Weather_response"] = json.dumps(sustainability_json)
+        # except requests.exceptions.RequestException as req_err:
+        #     error_message = str(req_err)
+        #     df.at[index, "Weather_response"] = error_message
+        #     print(f"❌ Weather API request failed: {error_message}")
+
+        if (plot_risk_response.status_code == 200):
+                # and sustainability_response.status_code == 200):
+            df.at[index, "status"] = "✅ Success"
         else:
-            df.at[index, "status"] = f"Failed: {status_code}"
-            df.at[index, "Response"] = response.text
-            failure_count += 1
+            df.at[index, "status"] = "❌ Failed"
 
-        print(f"{croppable_area_id}: Status {status_code}, {'Success' if status_code == 200 else 'Failed'}")
+    except Exception as e:
+        error_message = str(e)
+        df.at[index, "status"] = f"⚠️ Error: {error_message}"
+        print(f"⚠️ Error in row {index + 1}: {error_message}")
 
-    except requests.RequestException as e:
-        print(f"Error processing {croppable_area_id}: {e}")
-        df.at[index, "status"] = "Error"
-        df.at[index, "Response"] = str(e)
-        failure_count += 1
+    time.sleep(0.5)
 
-    # Wait for 1 second to avoid rate limits
-    time.sleep(1)
+# Save the updated Excel file
+with pd.ExcelWriter(file_path, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
+    df.to_excel(writer, sheet_name=sheet_name, index=False)
 
-# Save the updated DataFrame back to Excel
-df.to_excel(FILE_PATH, index=False)
-print(f"Process Completed: {success_count} Success, {failure_count} Failures")
+print("🎯 Processing complete. Data updated in the Excel file.")
