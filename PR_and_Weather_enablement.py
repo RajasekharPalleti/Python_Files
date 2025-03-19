@@ -7,7 +7,7 @@ import json
 from GetAuthtoken import get_access_token  # Ensure this module is available
 
 # Get access token
-token = get_access_token("solidaridad", "9876543210", "Cropin@123", "prod1")
+token = get_access_token("solidaridad", "anil.kolla@cropin.com", "Cropin@123", "prod1")
 
 if token:
     print("✅ Access token retrieved successfully.")
@@ -16,14 +16,14 @@ else:
     exit()
 
 # File path and sheet name
-file_path = r"C:\Users\rajasekhar.palleti\Downloads\PR_for_Solidaridad_Details_2025_02_21.xlsx"
+file_path = r"C:\Users\rajasekhar.palleti\Downloads\PR_for_Solidaridad_Details_2025_03_05 Pr to be enabled.xlsx"
 sheet_name = "result"  # Change this to your actual sheet name
 
 # Load Excel file with the specific sheet
 df = pd.read_excel(file_path, sheet_name=sheet_name)
 
 # Ensure necessary columns exist if not add
-columns_to_check = ["status", "srPlotid", "Plot_risk_response", "Weather_response"]
+columns_to_check = ["status","Failed in Response", "srPlotid", "Plot_risk_response", "Weather_response"]
 for col in columns_to_check:
     if col not in df.columns:
         df[col] = ""
@@ -95,21 +95,41 @@ for index, row in df.iloc[:].iterrows():
         #     df.at[index, "Weather_response"] = error_message
         #     print(f"❌ Weather API request failed: {error_message}")
 
+        # Update the status column
         if (plot_risk_response.status_code == 200):
-                # and sustainability_response.status_code == 200):
+                # (plot_risk_response.status_code == 200): of only plot risk
+                # (sustainability_response.status_code == 200): of only Sustainability Weather
             df.at[index, "status"] = "✅ Success"
         else:
             df.at[index, "status"] = "❌ Failed"
+
+        # Check if Failed in response of plotrisk API
+        sr_plot_details = plot_risk_json.get("srPlotDetails", {})
+
+        failed_found = False  # Flag to track any failed status
+
+        for key, value in sr_plot_details.items():
+            if value.get("status") == "FAILED":
+                failed_found = True
+                print(f"❌ Status for {key}: {value['status']} - {value.get('message', 'No message provided')}")
+                df.at[
+                    index, "Failed in Response"] = f"❌ Failed: {value.get('message', 'No details')}"  # Store failure message in status
+
+        # Update status column if no failure was found
+        if not failed_found:
+            df.at[index, "Failed in Response"] = "✅ Success"
+
 
     except Exception as e:
         error_message = str(e)
         df.at[index, "status"] = f"⚠️ Error: {error_message}"
         print(f"⚠️ Error in row {index + 1}: {error_message}")
 
-    time.sleep(0.5)
+    time.sleep(4.5)
 
 # Save the updated Excel file
+print("🎯 Processing completed. Data updating to the Excel file.")
 with pd.ExcelWriter(file_path, engine="openpyxl", mode="a", if_sheet_exists="replace") as writer:
     df.to_excel(writer, sheet_name=sheet_name, index=False)
 
-print("🎯 Processing complete. Data updated in the Excel file.")
+print("🎯 Process complete. Data updated in the Excel file.")

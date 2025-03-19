@@ -40,6 +40,8 @@ def post_data_to_api(api_url, token, input_excel, output_excel):
 
             # Update the additional attribute section with the new additional attribute name
             if "data" in asset_data and isinstance(asset_data["data"], dict):
+                if "stateRegistrationinscrioEstadual" not in asset_data["data"] or asset_data["data"]["stateRegistrationinscrioEstadual"] is None:
+                    asset_data["data"]["stateRegistrationinscrioEstadual"] = ""
                 asset_data["data"]["stateRegistrationinscrioEstadual"] = addlattr_name
                 print(f"Additional attribute modified for: {asset_id}")
             else:
