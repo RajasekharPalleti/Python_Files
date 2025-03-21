@@ -4,8 +4,6 @@
 # Excel format asset ids in column 1, asset names in column 2 and Tags(single or multiple) in column 3
 
 
-# Author : Rajasekhar Palleti
-
 import json
 import requests
 import openpyxl
