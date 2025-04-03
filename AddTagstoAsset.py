@@ -1,14 +1,12 @@
-# Author : Rajasekhar Palleti
-# This code will handle if tags is present it will add that to Asset if not add to master and adds
-# and will not allow to enter duplicate tags to assets
-# Excel format asset ids in column 1, asset names in column 2 and Tags(single or multiple) in column 3
-
+# Author: Rajasekhar Palleti
+# This script ensures that if a tag already exists for an asset, it is retained.
+# If a tag is missing, it is added to the master list and assigned to the asset.
+# Duplicate tags are prevented.
 
 import json
 import requests
 import openpyxl
 import time
-import sys
 from GetAuthtoken import get_access_token
 
 
@@ -27,9 +25,10 @@ def fetch_tags(token, tags_api_url, required_tag):
         response.raise_for_status()
         tags_data = response.json()
 
+        # If API returns empty, manually add the required tag
         if not tags_data:
-            print("❌ Error: Tags API returned an empty response. Exiting script.")
-            sys.exit(1)
+            print(f"⚠️ No tags found in API. Adding '{required_tag}' manually.")
+            return add_tag(token, required_tag)
 
         # Check if the required tag exists in the fetched data
         for tag in tags_data:
@@ -38,18 +37,31 @@ def fetch_tags(token, tags_api_url, required_tag):
                 return tag
 
         # If the tag is missing, add it
-        print(f"⏳ Adding missing tag: {required_tag}")
-        tag_payload = {"name": required_tag, "id": None}
-        post_response = requests.post(post_tag_url, headers=headers, json=tag_payload)
-        if post_response.status_code == 201:
-            print(f"✅ Successfully added missing tag: {required_tag}")
-            return post_response.json()
-        else:
-            print(f"❌ Failed to add tag: {required_tag} - {post_response.text}")
-            return None
+        return add_tag(token, required_tag)
+
     except requests.exceptions.RequestException as e:
-        print(f"❌ Error fetching tags from API: {e}. Exiting script.")
-        sys.exit(1)
+        print(f"❌ Error fetching tags from API: {e}. Continuing execution.")
+        return add_tag(token, required_tag)
+
+
+def add_tag(token, tag_name):
+    """
+    Adds a missing tag to the master list via the API.
+    """
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json"
+    }
+    print(f"⏳ Adding missing tag: {tag_name}")
+    tag_payload = {"name": tag_name, "id": None}
+
+    post_response = requests.post(post_tag_url, headers=headers, json=tag_payload)
+    if post_response.status_code == 201:
+        print(f"✅ Successfully added missing tag: {tag_name}")
+        return post_response.json()
+    else:
+        print(f"❌ Failed to add tag: {tag_name} - {post_response.text}")
+        return None
 
 
 def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
@@ -72,7 +84,7 @@ def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
     failure_reason_col = sheet.max_column
 
     for row in range(2, sheet.max_row + 1):
-        asset_id = sheet.cell(row=row, column=1).value  # Assume asset IDs are in column 1
+        asset_id = sheet.cell(row=row, column=1).value  # Assume Asset IDs are in column 1
         required_tags = sheet.cell(row=row, column=3).value  # Assume required tags are in column 3
 
         if required_tags:
@@ -80,7 +92,7 @@ def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
         else:
             required_tags = []
 
-        print(f"⏳ Processing row {row} - asset ID: {asset_id}, required tags: {required_tags}")
+        print(f"⏳ Processing row {row} - Asset ID: {asset_id}, Required Tags: {required_tags}")
 
         if not asset_id or not required_tags:
             sheet.cell(row=row, column=status_col, value="=> Skipped: Missing Data")
@@ -95,7 +107,7 @@ def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
             continue
 
         try:
-            print(f"⏳ Fetching details for asset ID: {asset_id}")
+            print(f"⏳ Fetching details for Asset ID: {asset_id}")
             get_response = requests.get(f"{api_url}/{asset_id}", headers=headers)
             get_response.raise_for_status()
             asset_data = get_response.json()
@@ -109,13 +121,13 @@ def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
                     if "tags" not in asset_data["data"] or asset_data["data"]["tags"] is None:
                         asset_data["data"]["tags"] = []
                     asset_data["data"]["tags"].extend(new_tags)
-                    print(f"✅ Added new tags {new_tags} to asset ID: {asset_id}")
+                    print(f"✅ Added new tags {new_tags} to Asset ID: {asset_id}")
                 else:
-                    print(f"⚠️ Tags already exist for asset ID: {asset_id}, skipping update.")
+                    print(f"⚠️ Tags already exist for Asset ID: {asset_id}, skipping update.")
                     sheet.cell(row=row, column=status_col, value="Skipped: Tags Already Present")
                     continue
             else:
-                print(f"❌ Failed to update tags for asset ID: {asset_id} - No 'data' key found")
+                print(f"❌ Failed to update tags for Asset ID: {asset_id} - No 'data' key found")
                 sheet.cell(row=row, column=status_col, value="Failed: No data key in asset data")
                 sheet.cell(row=row, column=failure_reason_col, value=str(asset_data))
                 continue
@@ -124,11 +136,11 @@ def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
 
             # Send updated asset data to the API
             multipart_data = {"dto": (None, json.dumps(asset_data), "application/json")}
-            print(f"⏳ Posting updated data for asset ID: {asset_id}")
+            print(f"⏳ Posting updated data for Asset ID: {asset_id}")
             put_response = requests.put(api_url, headers=headers, files=multipart_data)
             put_response.raise_for_status()
             sheet.cell(row=row, column=status_col, value="✅Success")
-            print(f"✅ Successfully posted updates for asset ID: {asset_id}")
+            print(f"✅ Successfully posted updates for Asset ID: {asset_id}")
 
         except requests.exceptions.RequestException as e:
             error_message = str(e)
@@ -136,7 +148,7 @@ def post_data_to_api(api_url, token, input_excel, output_excel, tags_api_url):
                 error_message = e.response.text
             sheet.cell(row=row, column=status_col, value="❌Failed")
             sheet.cell(row=row, column=failure_reason_col, value=error_message)
-            print(f"❌ Failed to update asset ID: {asset_id} - Error: {error_message}")
+            print(f"❌ Failed to update Asset ID: {asset_id} - Error: {error_message}")
 
         time.sleep(0.5)
 
