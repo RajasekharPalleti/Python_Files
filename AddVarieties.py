@@ -108,8 +108,8 @@ def post_data_to_api(post_api_url, access_token_bearer, input_excel_file, output
 
 # Inputs
 api_url = "https://cloud.cropin.in/services/farm/api/varieties"
-input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\addCropVarieties final sakata seeds.xlsx"
-output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\addCropVarieties final sakata seeds_Output.xlsx"
+input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AddCropVarietiesSet2.xlsx"
+output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AddCropVarietiesSet2_Output.xlsx"
 tenant_code = "sakataseeds"
 environment = "prod1"
 
