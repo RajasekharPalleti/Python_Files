@@ -97,9 +97,9 @@ def post_data_to_api_multithreaded(api_url, token, input_excel, output_excel, sh
 
 
 if __name__ == "__main__":
-    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\detect_rise_output (2).xlsx"
+    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\7151.xlsx"
     sheet_name = "result"
-    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\detect_rise_output (1)_update.xlsx"
+    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\7151_output.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/croppable-areas"
 
     print("Retrieving access token...")

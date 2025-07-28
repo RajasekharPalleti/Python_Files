@@ -14,7 +14,7 @@ def post_data_to_api(user_api_url, farmer_api_url, token, excel_sheet, sheet_nam
         """Returns None if the cell is empty or NaN, otherwise returns the string value."""
         return None if pd.isna(cell) or str(cell).strip() == "" else cell
 
-    # Ensure necessary columns exist
+    # Ensure the necessary columns exist
     columns_to_check = ["Status", "Response", "user_response", "farmer_response"]
     for col in columns_to_check:
         if col not in df.columns:
