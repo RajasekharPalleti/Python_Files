@@ -63,7 +63,7 @@ def post_data_to_api(post_api_url, access_token_bearer, input_excel_file, output
                             },
                             "name": row.iloc[12]  # Column 13: Location Name
                         },
-                        "expectedYield": row.iloc[14],  # Column 15: Expected Yield
+                        "expectedYield": row.iloc[13],  # Column 14: Expected Yield
                         "expectedYieldQuantity": "",
                         "expectedYieldUnits": row.iloc[15],  # Column 16: Yield Units
                         "refrenceAreaUnits": row.iloc[16]  # Column 17: Reference Area Units
@@ -99,21 +99,21 @@ def post_data_to_api(post_api_url, access_token_bearer, input_excel_file, output
             df.at[index, 'Status'] = "Error"
             df.at[index, 'Response'] = str(e)
 
-        # Wait for 1 second before the next iteration
-        time.sleep(0.2)
+        # Wait for 0.5 second before the next iteration
+        time.sleep(0.5)
 
     # Save the updated DataFrame with status to a new Excel file
     print("Saving updated DataFrame to a new Excel file...")
     df.to_excel(output_excel_file, index=False)
 
 # Inputs
-api_url = "https://v2uat-gcp.cropin.co.in/uat1/services/farm/api/varieties"
-input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\addCropVarieties.xlsx"
-output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AddCropVarietiesOutput.xlsx"
-tenant_code = "asp"
+api_url = "https://cloud.cropin.in/services/farm/api/varieties"
+input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\addCropVarieties final sakata seeds.xlsx"
+output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\addCropVarieties final sakata seeds_Output.xlsx"
+tenant_code = "sakataseeds"
 environment = "prod1"
 
-token = get_access_token(tenant_code, "9649964096", "123456", environment)
+token = get_access_token(tenant_code, "2024202501", "Cropin12345", environment)
 # token = "eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJaS08wSFZ2OGlVVmxzQTl6THFBUjhEOWVMc3NYNlVYTERWRkUzdkJ1N0lJIn0.eyJqdGkiOiIyOTM3MmExZS1hZDVlLTRlOWMtOThmZS0wOWYzOGUwMjRlZDgiLCJleHAiOjE3NDAzMDAxMTgsIm5iZiI6MCwiaWF0IjoxNzQwMTI3MzE4LCJpc3MiOiJodHRwczovL3Yyc3NvLXVhdC1nY3AuY3JvcGluLmNvLmluL2F1dGgvcmVhbG1zL3VhdHpvbmUxIiwiYXVkIjpbInJlc291cmNlX3NlcnZlciIsImFjY291bnQiXSwic3ViIjoiMTZlYjliYWQtY2Y1OS00N2Y0LWI2YzAtYjdhNTAxNjEzYjhlIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoid2ViX2FwcCIsIm5vbmNlIjoiX2NsaWVudF93ZWJfYXBwIiwiYXV0aF90aW1lIjoxNzQwMTI3MzE4LCJzZXNzaW9uX3N0YXRlIjoiYjk5YmY2YTUtNDg2NS00ZDUyLTgwYTYtZjc2OTk2NGE3ZDU4IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyIqIl0sInJlYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJvZmZsaW5lX2FjY2VzcyIsInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsicmVzb3VyY2Vfc2VydmVyIjp7InJvbGVzIjpbIlJhamEgUm9sZV9BZG1pbiByb2xlXzM2MjYwMSJdfSwiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwic2NvcGUiOiJvcGVuaWQgbWljcm9wcm9maWxlLWp3dCBwaG9uZSBwcm9maWxlIG9mZmxpbmVfYWNjZXNzIGVtYWlsIGFkZHJlc3MiLCJ1c2VyX3JvbGUiOlsiUmFqYSBSb2xlX0FkbWluIHJvbGVfMzYyNjAxIl0sInVwbiI6IjczODIyMTEzMDIiLCJhZGRyZXNzIjp7fSwiZW1haWxfdmVyaWZpZWQiOmZhbHNlLCJncm91cHMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiI3MzgyMjExMzAyIiwidGVuYW50IjoidWF0em9uZTEiLCJlbWFpbCI6InJhamFzZWtoYXIucGFsbGV0aTFAY3JvcGluLmNvbSJ9.U36jTyQAoBPfn2wJMS6cPqcIit0XhzMtiuAnFeBSO6EYRi5ygljd8qielSL_DboZ-zLQphEgZp_FoV2LDbYxy5CLF_EEvnsPy4VHOJPF42Thv45OBBglmy0jKhOgsIrS8YVFjPWCr6bYnA0scHTAa1fihdEgQXiJBas8-G6PuJsNMZiXq7dGPZ-zEehHMKSIBiM9EE0uenAuAFLsnm_nkcs20SHOA90gMUhsNRqrfAHg3iEuTF2XVGh3ulz-x8s_hifT1Q-VNb0pfffKoxhDBvRnGTzxXcQqWPe6jpjhchIQWFcU-UaaytbHa8xHK_4P6Qg4jVfXeso0xjGg1X-_hw"
 if token:
     post_data_to_api(api_url, token, input_excel, output_excel)
