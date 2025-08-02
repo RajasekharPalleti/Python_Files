@@ -5,7 +5,7 @@ import requests
 import pandas as pd
 import time
 
-from GetAuthtoken import get_access_token
+# from GetAuthtoken import get_access_token
 
 
 def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
