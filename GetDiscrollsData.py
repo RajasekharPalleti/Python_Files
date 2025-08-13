@@ -11,7 +11,7 @@ dataset = "vw_mobile_receipts" # Replace it with the below dataset name
 # "vw_sfc_exportmasterschedulestableau"
 # "vw_sfc_exportvolplanforecastsubmission"
 
-load_type = "initial" # Replace it with the actual load type "initial" or "incremental"
+load_type = "incremental" # Replace it with the actual load type "initial" or "incremental"
 headers = {
     'x-api-key': 'vMFOJ85zNW4yZFSWBAKU38JTcncxSAb057mIckMR'
 }
