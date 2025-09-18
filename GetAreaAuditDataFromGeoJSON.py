@@ -4,7 +4,7 @@ import pandas as pd
 # File paths
 input_geojson = r"C:\Users\rajasekhar.palleti\Downloads\Driscoll_wrong_shapes_removed.geojson"
 # Output Excel file path
-output_excel = r"C:\Users\rajasekhar.palleti\Downloads\Driscoll_Bulk_geojson_output.xlsx"
+output_excel = r"C:\Users\rajasekhar.palleti\Downloads\Driscoll_Bulk_output.xlsx"
 
 # Read the GeoJSON file
 with open(input_geojson, "r", encoding="utf-8") as f:
@@ -38,15 +38,24 @@ for idx, feature in enumerate(data.get("features", []), start=1):
 
     records.append({
         "geometry": json.dumps(wrapped_geometry),  # store as JSON string
+        "transactional_ranch_number": properties.get("transactional_ranch_number"),
+        "variety_code": properties.get("variety_code"),
+        "variety_name": properties.get("variety_name"),
+        "grower_number": properties.get("grower_number"),
+        "berry_type": properties.get("berry_type"),
+        "producing_area_name": properties.get("producing_area_name"),
+        "field_type": properties.get("field_type"),
+        "review_year": properties.get("review_year"),
+        "planting_date": properties.get("planting_date"),
+        "objectid": properties.get("objectid"),
         "ranch_latitude": properties.get("ranch_latitude"),
         "ranch_longitude": properties.get("ranch_longitude"),
         "hectares": properties.get("hectares"),
         "acres": properties.get("acres"),
-        "producing_area_name": properties.get("producing_area_name"),
         "region_name": properties.get("region_name"),
         "district_name": properties.get("district_name"),
         "microclimate_name": properties.get("microclimate_name"),
-        "planting_date": properties.get("planting_date")
+        "plant_density_ha": properties.get("plant_density_ha")
     })
 
 # Convert to DataFrame

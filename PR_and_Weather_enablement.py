@@ -7,7 +7,7 @@ import json
 from GetAuthtoken import get_access_token  # Ensure this module is available
 
 # Get access token
-token = get_access_token("solidaridad", "anil.kolla@cropin.com", "Cropin@123", "prod1")
+token = get_access_token("auxoaidriscolls", "9148981108", "cropin@123", "prod1")
 
 if token:
     print("✅ Access token retrieved successfully.")
@@ -16,7 +16,7 @@ else:
     exit()
 
 # File path and sheet name
-file_path = r"C:\Users\rajasekhar.palleti\Downloads\PR_for_Solidaridad_Details_2025_03_05 Pr to be enabled.xlsx"
+file_path = r"C:\Users\rajasekhar.palleti\Downloads\Auxo AI Driscolls PR enablement.xlsx"
 sheet_name = "result"  # Change this to your actual sheet name
 
 # Load Excel file with the specific sheet
@@ -125,7 +125,7 @@ for index, row in df.iloc[:].iterrows():
         df.at[index, "status"] = f"⚠️ Error: {error_message}"
         print(f"⚠️ Error in row {index + 1}: {error_message}")
 
-    time.sleep(4.5)
+    time.sleep(2)
 
 # Save the updated Excel file
 print("🎯 Processing completed. Data updating to the Excel file.")
