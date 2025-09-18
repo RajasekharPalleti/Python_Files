@@ -112,281 +112,281 @@ for index, row in df.iterrows():
 				"hidden": False
 			}
 		],
-		"columnHeaderAttributes": [
-			{
-				"type": "text",
-				"style": {},
-				"addUrl": "",
-				"apiUrl": "",
-				"controls": "",
-				"validation": {
-					"fixed": True,
-					"mandatory": True,
-					"selected": True
-				},
-				"hidden": False,
-				"display_value": "tripName",
-				"display_name": "TRIP_NAME"
-			},
-			{
-				"type": "select",
-				"style": {},
-				"apiUrl": "master/api/batch-details/fetchCutting",
-				"controls": "",
-				"validation": {
-					"fixed": True,
-					"mandatory": True,
-					"selected": True
-				},
-				"valueToSave": "parentPlan",
-				"masterDataKey": "cutting_plan",
-				"valueDependent": "params",
-				"valueToDisplay": "name",
-				"hidden": False,
-				"display_value": "cuttingPlanID",
-				"display_name": "CUTTING_PLAN"
-			},
-			{
-				"type": "text",
-				"style": {},
-				"addUrl": "",
-				"apiUrl": "",
-				"controls": "",
-				"validation": {
-					"fixed": False,
-					"mandatory": True,
-					"selected": True
-				},
-				"hidden": False,
-				"display_value": "vehicleNumber",
-				"display_name": "VEHICLE_NUMBER"
-			},
-			{
-				"type": "select",
-				"style": {},
-				"apiUrl": "master/api/sku-types",
-				"controls": "",
-				"validation": {
-					"fixed": False,
-					"mandatory": True,
-					"selected": True
-				},
-				"valueToSave": "id",
-				"masterDataKey": "sku_type",
-				"valueToDisplay": "name",
-				"hidden": False,
-				"display_value": "skuType",
-				"display_name": "SKU_TYPE"
-			},
-			{
-				"type": "number",
-				"style": {},
-				"apiUrl": "",
-				"controls": "",
-				"validation": {
-					"fixed": False,
-					"mandatory": True,
-					"selected": True
-				},
-				"hidden": False,
-				"display_value": "noOfSKU",
-				"display_name": "NUMBER_OF_SKUS"
-			},
-			{
-				"type": "units",
-				"style": {},
-				"apiUrl": "master/api/constants?name=quantityunit",
-				"controls": "",
-				"isEditable": True,
-				"validation": {
-					"fixed": False,
-					"mandatory": True,
-					"selected": True
-				},
-				"hasCalculation": True,
-				"constantDataKey": "quantity_units",
-				"calculationFunction": "function calculateFormula(capacity,unit,skuCount){let obj= new Object({});if(skuCount){obj.count=skuCount*capacity;obj.count = parseFloat(parseFloat(obj.count).toFixed(2))}if(unit){obj.unit=unit} return obj;}",
-				"calculationAttributes": [
-					"skut.livedbfield-skuType.capacity",
-					"skut.livedbfield-skuType.unitId.$unit.unitName",
-					"pt.this.data.planHeaderAttributesEntered.noOfSKU"
-				],
-				"hidden": False,
-				"display_value": "totalQuantity",
-				"display_name": "TOTAL_QUANTITY"
-			}
-		],
-		"columnHeaderGroup": {
-			"groupName": "Trip Name",
-			"groupList": [
-				{
-					"type": "text",
-					"style": {},
-					"addUrl": "",
-					"apiUrl": "",
-					"controls": "",
-					"validation": {
-						"fixed": True,
-						"mandatory": True,
-						"selected": True
-					},
-					"hidden": False,
-					"display_value": "tripName",
-					"display_name": "TRIP_NAME"
-				},
-				{
-					"type": "select",
-					"style": {},
-					"addUrl": "",
-					"apiUrl": "master/api/harvest-grades/varieties",
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": False,
-						"selected": False
-					},
-					"valueToSave": "id",
-					"masterDataKey": "harvest_grade",
-					"valueDependent": "params",
-					"valueToDisplay": "name",
-					"hidden": True,
-					"display_value": "harvestGradeName",
-					"display_name": "HARVEST_GRADE_NAME"
-				},
-				{
-					"type": "select",
-					"style": {},
-					"apiUrl": "master/api/batch-details/fetchCutting",
-					"controls": "",
-					"validation": {
-						"fixed": True,
-						"mandatory": True,
-						"selected": True
-					},
-					"valueToSave": "parentPlan",
-					"masterDataKey": "cutting_plan",
-					"valueDependent": "params",
-					"valueToDisplay": "name",
-					"hidden": False,
-					"display_value": "cuttingPlanID",
-					"display_name": "CUTTING_PLAN"
-				},
-				{
-					"type": "text",
-					"style": {},
-					"addUrl": "",
-					"apiUrl": "",
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": True,
-						"selected": True
-					},
-					"hidden": False,
-					"display_value": "vehicleNumber",
-					"display_name": "VEHICLE_NUMBER"
-				},
-				{
-					"type": "select",
-					"style": {},
-					"apiUrl": "master/api/sku-types",
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": True,
-						"selected": True
-					},
-					"valueToSave": "id",
-					"masterDataKey": "sku_type",
-					"valueToDisplay": "name",
-					"hidden": False,
-					"display_value": "skuType",
-					"display_name": "SKU_TYPE"
-				},
-				{
-					"type": "number",
-					"style": {},
-					"apiUrl": "",
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": True,
-						"selected": True
-					},
-					"hidden": False,
-					"display_value": "noOfSKU",
-					"display_name": "NUMBER_OF_SKUS"
-				},
-				{
-					"type": "select",
-					"style": {},
-					"addNew": True,
-					"apiUrl": "master/api/batch-details",
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": False,
-						"selected": False
-					},
-					"valueToSave": "uibatchNumber",
-					"masterDataKey": "batch_details",
-					"valueToDisplay": "uibatchNumber",
-					"hidden": True,
-					"display_value": "batchNumber",
-					"display_name": "LOT/BATCH_NUMBER"
-				},
-				{
-					"type": "units",
-					"style": {},
-					"apiUrl": "master/api/constants?name=quantityunit",
-					"controls": "",
-					"isEditable": True,
-					"validation": {
-						"fixed": False,
-						"mandatory": True,
-						"selected": True
-					},
-					"hasCalculation": True,
-					"constantDataKey": "quantity_units",
-					"calculationFunction": "function calculateFormula(capacity,unit,skuCount){let obj= new Object({});if(skuCount){obj.count=skuCount*capacity;obj.count = parseFloat(parseFloat(obj.count).toFixed(2))}if(unit){obj.unit=unit} return obj;}",
-					"calculationAttributes": [
-						"skut.livedbfield-skuType.capacity",
-						"skut.livedbfield-skuType.unitId.$unit.unitName",
-						"pt.this.data.planHeaderAttributesEntered.noOfSKU"
-					],
-					"hidden": False,
-					"display_value": "totalQuantity",
-					"display_name": "TOTAL_QUANTITY"
-				},
-				{
-					"type": "date",
-					"style": {},
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": False,
-						"selected": False
-					},
-					"hidden": True,
-					"display_value": "deliveryDate",
-					"display_name": "DELIVERY_DATE"
-				},
-				{
-					"type": "date",
-					"style": {},
-					"apiUrl": "",
-					"controls": "",
-					"validation": {
-						"fixed": False,
-						"mandatory": False,
-						"selected": False
-					},
-					"hidden": True,
-					"display_value": "date",
-					"display_name": "DATE/DAYS_FROM_SOWING_DATE"
-				}
-			]
-		}
+		# "columnHeaderAttributes": [
+		# 	{
+		# 		"type": "text",
+		# 		"style": {},
+		# 		"addUrl": "",
+		# 		"apiUrl": "",
+		# 		"controls": "",
+		# 		"validation": {
+		# 			"fixed": True,
+		# 			"mandatory": True,
+		# 			"selected": True
+		# 		},
+		# 		"hidden": False,
+		# 		"display_value": "tripName",
+		# 		"display_name": "TRIP_NAME"
+		# 	},
+		# 	{
+		# 		"type": "select",
+		# 		"style": {},
+		# 		"apiUrl": "master/api/batch-details/fetchCutting",
+		# 		"controls": "",
+		# 		"validation": {
+		# 			"fixed": True,
+		# 			"mandatory": True,
+		# 			"selected": True
+		# 		},
+		# 		"valueToSave": "parentPlan",
+		# 		"masterDataKey": "cutting_plan",
+		# 		"valueDependent": "params",
+		# 		"valueToDisplay": "name",
+		# 		"hidden": False,
+		# 		"display_value": "cuttingPlanID",
+		# 		"display_name": "CUTTING_PLAN"
+		# 	},
+		# 	{
+		# 		"type": "text",
+		# 		"style": {},
+		# 		"addUrl": "",
+		# 		"apiUrl": "",
+		# 		"controls": "",
+		# 		"validation": {
+		# 			"fixed": False,
+		# 			"mandatory": True,
+		# 			"selected": True
+		# 		},
+		# 		"hidden": False,
+		# 		"display_value": "vehicleNumber",
+		# 		"display_name": "VEHICLE_NUMBER"
+		# 	},
+		# 	{
+		# 		"type": "select",
+		# 		"style": {},
+		# 		"apiUrl": "master/api/sku-types",
+		# 		"controls": "",
+		# 		"validation": {
+		# 			"fixed": False,
+		# 			"mandatory": True,
+		# 			"selected": True
+		# 		},
+		# 		"valueToSave": "id",
+		# 		"masterDataKey": "sku_type",
+		# 		"valueToDisplay": "name",
+		# 		"hidden": False,
+		# 		"display_value": "skuType",
+		# 		"display_name": "SKU_TYPE"
+		# 	},
+		# 	{
+		# 		"type": "number",
+		# 		"style": {},
+		# 		"apiUrl": "",
+		# 		"controls": "",
+		# 		"validation": {
+		# 			"fixed": False,
+		# 			"mandatory": True,
+		# 			"selected": True
+		# 		},
+		# 		"hidden": False,
+		# 		"display_value": "noOfSKU",
+		# 		"display_name": "NUMBER_OF_SKUS"
+		# 	},
+		# 	{
+		# 		"type": "units",
+		# 		"style": {},
+		# 		"apiUrl": "master/api/constants?name=quantityunit",
+		# 		"controls": "",
+		# 		"isEditable": True,
+		# 		"validation": {
+		# 			"fixed": False,
+		# 			"mandatory": True,
+		# 			"selected": True
+		# 		},
+		# 		"hasCalculation": True,
+		# 		"constantDataKey": "quantity_units",
+		# 		"calculationFunction": "function calculateFormula(capacity,unit,skuCount){let obj= new Object({});if(skuCount){obj.count=skuCount*capacity;obj.count = parseFloat(parseFloat(obj.count).toFixed(2))}if(unit){obj.unit=unit} return obj;}",
+		# 		"calculationAttributes": [
+		# 			"skut.livedbfield-skuType.capacity",
+		# 			"skut.livedbfield-skuType.unitId.$unit.unitName",
+		# 			"pt.this.data.planHeaderAttributesEntered.noOfSKU"
+		# 		],
+		# 		"hidden": False,
+		# 		"display_value": "totalQuantity",
+		# 		"display_name": "TOTAL_QUANTITY"
+		# 	}
+		# ],
+		# "columnHeaderGroup": {
+		# 	"groupName": "Trip Name",
+		# 	"groupList": [
+		# 		{
+		# 			"type": "text",
+		# 			"style": {},
+		# 			"addUrl": "",
+		# 			"apiUrl": "",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": True,
+		# 				"mandatory": True,
+		# 				"selected": True
+		# 			},
+		# 			"hidden": False,
+		# 			"display_value": "tripName",
+		# 			"display_name": "TRIP_NAME"
+		# 		},
+		# 		{
+		# 			"type": "select",
+		# 			"style": {},
+		# 			"addUrl": "",
+		# 			"apiUrl": "master/api/harvest-grades/varieties",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": False,
+		# 				"selected": False
+		# 			},
+		# 			"valueToSave": "id",
+		# 			"masterDataKey": "harvest_grade",
+		# 			"valueDependent": "params",
+		# 			"valueToDisplay": "name",
+		# 			"hidden": True,
+		# 			"display_value": "harvestGradeName",
+		# 			"display_name": "HARVEST_GRADE_NAME"
+		# 		},
+		# 		{
+		# 			"type": "select",
+		# 			"style": {},
+		# 			"apiUrl": "master/api/batch-details/fetchCutting",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": True,
+		# 				"mandatory": True,
+		# 				"selected": True
+		# 			},
+		# 			"valueToSave": "parentPlan",
+		# 			"masterDataKey": "cutting_plan",
+		# 			"valueDependent": "params",
+		# 			"valueToDisplay": "name",
+		# 			"hidden": False,
+		# 			"display_value": "cuttingPlanID",
+		# 			"display_name": "CUTTING_PLAN"
+		# 		},
+		# 		{
+		# 			"type": "text",
+		# 			"style": {},
+		# 			"addUrl": "",
+		# 			"apiUrl": "",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": True,
+		# 				"selected": True
+		# 			},
+		# 			"hidden": False,
+		# 			"display_value": "vehicleNumber",
+		# 			"display_name": "VEHICLE_NUMBER"
+		# 		},
+		# 		{
+		# 			"type": "select",
+		# 			"style": {},
+		# 			"apiUrl": "master/api/sku-types",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": True,
+		# 				"selected": True
+		# 			},
+		# 			"valueToSave": "id",
+		# 			"masterDataKey": "sku_type",
+		# 			"valueToDisplay": "name",
+		# 			"hidden": False,
+		# 			"display_value": "skuType",
+		# 			"display_name": "SKU_TYPE"
+		# 		},
+		# 		{
+		# 			"type": "number",
+		# 			"style": {},
+		# 			"apiUrl": "",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": True,
+		# 				"selected": True
+		# 			},
+		# 			"hidden": False,
+		# 			"display_value": "noOfSKU",
+		# 			"display_name": "NUMBER_OF_SKUS"
+		# 		},
+		# 		{
+		# 			"type": "select",
+		# 			"style": {},
+		# 			"addNew": True,
+		# 			"apiUrl": "master/api/batch-details",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": False,
+		# 				"selected": False
+		# 			},
+		# 			"valueToSave": "uibatchNumber",
+		# 			"masterDataKey": "batch_details",
+		# 			"valueToDisplay": "uibatchNumber",
+		# 			"hidden": True,
+		# 			"display_value": "batchNumber",
+		# 			"display_name": "LOT/BATCH_NUMBER"
+		# 		},
+		# 		{
+		# 			"type": "units",
+		# 			"style": {},
+		# 			"apiUrl": "master/api/constants?name=quantityunit",
+		# 			"controls": "",
+		# 			"isEditable": True,
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": True,
+		# 				"selected": True
+		# 			},
+		# 			"hasCalculation": True,
+		# 			"constantDataKey": "quantity_units",
+		# 			"calculationFunction": "function calculateFormula(capacity,unit,skuCount){let obj= new Object({});if(skuCount){obj.count=skuCount*capacity;obj.count = parseFloat(parseFloat(obj.count).toFixed(2))}if(unit){obj.unit=unit} return obj;}",
+		# 			"calculationAttributes": [
+		# 				"skut.livedbfield-skuType.capacity",
+		# 				"skut.livedbfield-skuType.unitId.$unit.unitName",
+		# 				"pt.this.data.planHeaderAttributesEntered.noOfSKU"
+		# 			],
+		# 			"hidden": False,
+		# 			"display_value": "totalQuantity",
+		# 			"display_name": "TOTAL_QUANTITY"
+		# 		},
+		# 		{
+		# 			"type": "date",
+		# 			"style": {},
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": False,
+		# 				"selected": False
+		# 			},
+		# 			"hidden": True,
+		# 			"display_value": "deliveryDate",
+		# 			"display_name": "DELIVERY_DATE"
+		# 		},
+		# 		{
+		# 			"type": "date",
+		# 			"style": {},
+		# 			"apiUrl": "",
+		# 			"controls": "",
+		# 			"validation": {
+		# 				"fixed": False,
+		# 				"mandatory": False,
+		# 				"selected": False
+		# 			},
+		# 			"hidden": True,
+		# 			"display_value": "date",
+		# 			"display_name": "DATE/DAYS_FROM_SOWING_DATE"
+		# 		}
+		# 	]
+		# }
 	},
 	"id": None,
 	"dataCollection": False,

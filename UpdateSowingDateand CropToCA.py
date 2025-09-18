@@ -4,17 +4,15 @@ import json
 import requests
 import pandas as pd
 import time
-
+from datetime import datetime
 from GetAuthtoken import get_access_token
 
 
 def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
     headers = {
         "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json",
-        "channel": "mobile"
+        "Content-Type": "application/json"
     }
-    time_value = 0.5  # seconds
 
     df = pd.read_excel(input_excel, sheet_name=sheet_name)
 
@@ -23,17 +21,24 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
     if "CA_Response" not in df.columns:
         df["CA_Response"] = ""
 
+    # for index, row in df.iloc[1:4].iterrows():
     for index, row in df.iterrows():
         CA_id = row.iloc[0]  # Column A
-        area_Audit_DTO = row.iloc[1]  # Column B
-        Latitude = row.iloc[2]  # Column C
-        Longitude = row.iloc[3]  # Column D
-        audited_count = row.iloc[4]  # Column E
+        variety_id = row.iloc[5]  # Column F
+        raw_sowing_date = row.iloc[6]  # Column G
 
-        geo_info = json.loads(area_Audit_DTO) #area_Audit_DTO is a JSON string
+        # Handle if it's already a datetime or string
+        if isinstance(raw_sowing_date, pd.Timestamp):  # Excel datetime type
+            sowingDate = raw_sowing_date.strftime("%Y-%m-%dT%H:%M:%S.000+0000")
+        else:
+            # If string like "2024-11-19T00:00:00" or "2024-11-19T08:00:00" it will take only date part
+            # and convert to the required format
+            sowingDate = datetime.strptime(str(raw_sowing_date).split("T")[0], "%Y-%m-%d").strftime(
+                "%Y-%m-%dT%H:%M:%S.000+0000"
+            )
 
 
-        if pd.isna(CA_id) or pd.isna(Latitude) or pd.isna(Longitude) or pd.isna(area_Audit_DTO):
+        if pd.isna(CA_id) or pd.isna(variety_id) or pd.isna(raw_sowing_date):
             df.at[index, "Status"] = "Skipped: Missing Data"
             continue
 
@@ -47,34 +52,14 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
             CA_data = get_response.json()
             print(f"\nRow {index + 2} — CA_ID: {CA_id}")
 
-            # Ensure areAudit Key exist
-            if "areaAudit" not in CA_data:
-                print("areaAudit key missing. Adding...")
-                CA_data["areaAudit"] = None
-
-            areaAudit =   {
-                "id": None,
-                "geoInfo" : geo_info,
-                "latitude": Latitude,
-                "longitude": Longitude,
-                "altitude": None
-            }
-            auditedArea  = {
-                "count": audited_count,
-                "unit": "Acre" #As per the user preferred unit
-            }
-
             # Set values from Excel
-            CA_data["areaAudit"] = areaAudit
-            CA_data["latitude"] = None
-            CA_data["longitude"] = None
-            CA_data["auditedArea"]= auditedArea
-            CA_data["cropAudited"] = True  # uncomment this line if a script got the cropAudited is not null error
-            print(f"Updated the Area audit in CA DTO", )
+            CA_data["varietyId"] = variety_id
+            CA_data["sowingDate"] = sowingDate
+            print(f"Updated Variety_id: {variety_id}, sowing_date: {sowingDate}")
 
-            time.sleep(time_value)
+            time.sleep(1)
 
-            put_response = requests.put(f"{api_url}/area-audit", headers=headers, data=json.dumps(CA_data))
+            put_response = requests.put(f"{api_url}", headers=headers, data=json.dumps(CA_data))
             if put_response.status_code != 200:
                 df.at[index, "Status"] = f"PUT Failed: {put_response.status_code}"
                 print(put_response)
@@ -91,16 +76,16 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
             df.at[index, "Status"] = f"Failed: {str(e)}"
             print(f"Update failed for CA_ID: {CA_id} — {e}")
 
-        time.sleep(time_value)
+        time.sleep(2)
 
     df.to_excel(output_excel, sheet_name=sheet_name, index=False)
     print(f"\nExcel file updated and saved as {output_excel}")
 
 
 if __name__ == "__main__":
-    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\22 plots area audit file.xlsx"
-    sheet_name = "result"
-    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\22 plots area audit file_report.xlsx"
+    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AreaAudit_Variety_Add.xlsx"
+    sheet_name = "Sheet1"
+    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AreaAudit_Variety_Add_report.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/croppable-areas"
 
     print("Retrieving access token...")
