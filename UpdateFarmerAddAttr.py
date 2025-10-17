@@ -5,23 +5,22 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 from GetAuthtoken import get_access_token
 
-def process_chunk(df_chunk, api_url, token, thread_id):
-    headers = {
-        "Authorization": f"Bearer {token}"
-    }
+def process_chunk(df_chunk, api_url, token, thread_id, output_excel):
+    headers = {"Authorization": f"Bearer {token}"}
     results = []
 
     for index, row in df_chunk.iterrows():
         print(f"[Thread {thread_id}] Processing row index: {index}")
 
-        farmer_id = row[0]  # Column A: Farmer ID
-        addlattr_name = row[3]  # Column D: Additional attribute name
-
+        farmer_id = row.get("farmerID")  # Column A: Farmer ID
+        branchName = row.get("branchName")  # Column D
+        bankName = row.get("bankName")    # Column E
+        ifsc = row.get("ifsc")         # Column F
 
         status = ""
         response_str = ""
 
-        if pd.isna(farmer_id) or pd.isna(addlattr_name):
+        if pd.isna(farmer_id) or pd.isna(branchName):
             status = "Skipped: Missing Data"
             results.append((index, status, response_str))
             continue
@@ -33,7 +32,9 @@ def process_chunk(df_chunk, api_url, token, thread_id):
             farmer_data = get_response.json()
 
             if "data" in farmer_data and isinstance(farmer_data["data"], dict):
-                farmer_data["data"]["farmerProject"] = addlattr_name
+                farmer_data["data"]["branchName"] = branchName
+                farmer_data["data"]["bankName"] = bankName
+                farmer_data["data"]["ifsc"] = ifsc
                 print(f"[Thread {thread_id}] Modified data for: {farmer_id}")
             else:
                 status = "Failed: No data"
@@ -50,7 +51,7 @@ def process_chunk(df_chunk, api_url, token, thread_id):
             put_response.raise_for_status()
 
             status = "Success"
-            response_str = put_response.text[:300]  # Limit long responses
+            response_str = put_response.text[:300]
 
             print(f"[Thread {thread_id}] Updated: {farmer_id}")
 
@@ -62,33 +63,49 @@ def process_chunk(df_chunk, api_url, token, thread_id):
         time.sleep(0.2)
         results.append((index, status, response_str))
 
+        # ✅ Optional: Save progress every 100 rows
+        if len(results) % 100 == 0:
+            try:
+                temp_results = pd.DataFrame(results, columns=["Index", "Status", "Response"])
+                temp_results.to_excel(output_excel.replace(".xlsx", f"_progress_thread{thread_id}.xlsx"), index=False)
+                print(f"[Thread {thread_id}] Progress saved at row {index}")
+            except Exception as e:
+                print(f"[Thread {thread_id}] Failed to save progress: {str(e)}")
+
     return results
 
+
 def post_data_with_multithreading(api_url, token, input_excel, output_excel):
+    # ✅ Read Excel and drop any unnamed empty columns
     df = pd.read_excel(input_excel)
+    df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
     df["Status"] = ""
     df["Response"] = ""
 
-    # Split the DataFrame into two chunks using iloc[]
     mid_index = len(df) // 2
     chunk1 = df.iloc[:mid_index]
     chunk2 = df.iloc[mid_index:]
 
-    # Use ThreadPoolExecutor to run 2 threads
     with ThreadPoolExecutor(max_workers=2) as executor:
-        future1 = executor.submit(process_chunk, chunk1, api_url, token, 1)
-        future2 = executor.submit(process_chunk, chunk2, api_url, token, 2)
+        futures = [
+            executor.submit(process_chunk, chunk1, api_url, token, 1, output_excel),
+            executor.submit(process_chunk, chunk2, api_url, token, 2, output_excel)
+        ]
 
-        results = future1.result() + future2.result()
+        results = []
+        for f in futures:
+            results.extend(f.result())
 
-    # Update the original dataframe with the results
+    # ✅ Update only known columns
     for idx, status, response in results:
-        df.at[idx, "Status"] = status
-        df.at[idx, "Response"] = response
+        if idx in df.index:
+            df.at[idx, "Status"] = status
+            df.at[idx, "Response"] = response
 
-    # Save the updated DataFrame
+    # ✅ Save final clean Excel
     df.to_excel(output_excel, index=False)
-    print(f"Updated Excel saved at: {output_excel}")
+    print(f"✅ Final Excel saved at: {output_excel}")
+
 
 if __name__ == "__main__":
     tenant_code = "gpi"

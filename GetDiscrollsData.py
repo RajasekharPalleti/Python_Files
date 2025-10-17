@@ -4,7 +4,7 @@ import requests
 import json
 
 baseurl = "https://to2nq285i7.execute-api.us-west-2.amazonaws.com/prod/fetch_data/cropin"
-dataset = "vw_mobile_receipts" # Replace it with the below dataset name
+dataset = "vw_rpt_application_blocks_v" # Replace it with the below dataset name
 # "vw_mobile_receipts"
 # "vw_rpt_application_blocks_v"
 # "vw_rpt_transactional_ranch_numbers_v"
