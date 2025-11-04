@@ -2,9 +2,9 @@ import json
 import pandas as pd
 
 # File paths
-input_geojson = r"C:\Users\rajasekhar.palleti\Downloads\CAR_DB.geojson"
+input_geojson = r"C:\Users\rajasekhar.palleti\Downloads\cangucu_tobacco_plots_4326.geojson"
 # Output Excel file path
-output_excel = r"C:\Users\rajasekhar.palleti\Downloads\CAR_DB.geojson_output.xlsx"
+output_excel = r"C:\Users\rajasekhar.palleti\Downloads\cangucu_tobacco_plots.geojson_output.xlsx"
 
 # Read the GeoJSON file
 with open(input_geojson, "r", encoding="utf-8") as f:
@@ -22,7 +22,9 @@ for idx, feature in enumerate(data.get("features", []), start=1):
     if geometry is None:
         print(f"Skipping feature {idx} due to missing geometry.")
         continue
-
+    coordinates = geometry.get("coordinates", [])
+    coordinates_final = [coordinates]
+    geometry["coordinates"] = coordinates_final
     # Wrap geometry into the required FeatureCollection format
     wrapped_geometry = {
         "type": "FeatureCollection",
@@ -38,12 +40,13 @@ for idx, feature in enumerate(data.get("features", []), start=1):
 
     records.append({
         "geometry": json.dumps(wrapped_geometry),  # store as JSON string
-        "pk": properties.get("pk")
-        # "farmer_id": properties.get("farmer_id"),
-        # "area": properties.get("area")
-        # "transactional_ranch_number": properties.get("transactional_ranch_number"),
-        # "variety_code": properties.get("variety_code"),
-        # "variety_name": properties.get("variety_name"),
+        "pk": properties.get("pk"),
+        "tobacco_type": properties.get("tobacco_type"),
+        "boundary_id_county": properties.get("boundary_id_county"),
+        "county_name": properties.get("county_name"),
+        "boundary_id_state": properties.get("boundary_id_state"),
+        "state_name": properties.get("state_name"),
+        "geometry_raw": (lambda coords: coords[0] if isinstance(coords, list) and len(coords) == 1 else coords)(geometry.get("coordinates"))
         # "grower_number": properties.get("grower_number"),
         # "berry_type": properties.get("berry_type"),
         # "producing_area_name": properties.get("producing_area_name"),

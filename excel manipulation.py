@@ -1,22 +1,25 @@
 import pandas as pd
 
-# Read from Sheet2
-input_excel = r"C:\Users\rajasekhar.palleti\Downloads\Driscoll_Bulk_output.xlsx"
-df = pd.read_excel(input_excel, sheet_name="Sheet2")
+# File paths
+input_file = r"C:\Users\rajasekhar.palleti\Downloads\cangucu_tobacco_plots.geojson_output.xlsx"       # change to your input file
+output_file = r"C:\Users\rajasekhar.palleti\Downloads\cangucu_tobacco_plots.geojson_output1.xlsx"     # output file name
+column_name = "pk"             # column name in your Excel containing the IDs
 
-# Group by transactional_ranch_number and aggregate objectid
-result = df.groupby("grower_number").agg({
-    "transactional_ranch_number": [
-        lambda x: ",".join(map(str, sorted(set(x)))),  # all unique IDs as comma-separated string
-        lambda x: x.nunique()  # distinct count of IDs
-    ]
-}).reset_index()
+# Read Excel
+df = pd.read_excel(input_file)
 
-# Rename columns
-result.columns = ["grower_number", "transactional_ranch_numbers", "count"]
+# Split the IDS column
+df[['year', 'code', 'suffix']] = df[column_name].str.split('_', expand=True)
 
-# Write result into the same file, new sheet (Sheet3)
-with pd.ExcelWriter(input_excel, mode="a", engine="openpyxl", if_sheet_exists="replace") as writer:
-    result.to_excel(writer, sheet_name="Organized", index=False)
+# Create required columns
+df['farmer_name'] = df['year'] + "_" + df['code']
+df['farmer_code'] = df['code']
+df['mobile_number'] = df['year'] + df['code']
 
-print("✅ Done! Results added to Organized in input.xlsx")
+# Drop helper columns
+df = df.drop(columns=['year', 'code', 'suffix'])
+
+# Save to Excel
+df.to_excel(output_file, index=False)
+
+print("✅ Processing completed. File saved as:", output_file)

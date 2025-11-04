@@ -25,10 +25,10 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
 
     for index, row in df.iterrows():
         CA_id = row.iloc[0]  # Column A
-        area_Audit_DTO = row.iloc[1]  # Column B
-        Latitude = row.iloc[2]  # Column C
-        Longitude = row.iloc[3]  # Column D
-        audited_count = row.iloc[4]  # Column E
+        area_Audit_DTO = row.iloc[2]  # Column C
+        Latitude = row.iloc[3]  # Column D
+        Longitude = row.iloc[4]  # Column E
+        audited_count = row.iloc[5]  # Column F
 
         geo_info = json.loads(area_Audit_DTO) #area_Audit_DTO is a JSON string
 
@@ -61,7 +61,7 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
             }
             auditedArea  = {
                 "count": audited_count,
-                "unit": "Acre" #As per the user preferred unit
+                "unit": "Hectare" #As per the user preferred unit
             }
 
             # Set values from Excel
@@ -98,13 +98,13 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
 
 
 if __name__ == "__main__":
-    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\22 plots area audit file.xlsx"
-    sheet_name = "result"
-    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\22 plots area audit file_report.xlsx"
+    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\cangucu_tobacco_plots.geojson_output1.xlsx"
+    sheet_name = "Sheet2"
+    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\cangucu_tobacco_plots.geojson_output_final.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/croppable-areas"
 
     print("Retrieving access token...")
-    token = get_access_token("auxoaidriscolls", "9148981108", "cropin@123", "prod1")
+    token = get_access_token("productdemo", "9108896131", "pmproductdemo", "prod1")
     if token:
         print("Access token retrieved successfully.")
         post_data_to_api(api_url, token, input_excel, output_excel, sheet_name)
