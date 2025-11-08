@@ -108,5 +108,5 @@ def tag_india_check_file(input_excel: str | Path) -> Path:
 
 if __name__ == "__main__":
     # Example usage:
-    tag_india_check_file(r"C:\Users\rajasekhar.palleti\Downloads\your_file.xlsx")
+    tag_india_check_file(r"C:\Users\rajasekhar.palleti\Downloads\mdlz Area audit information\Kerala _ South Central Kerala(1).xlsx")
     # pass

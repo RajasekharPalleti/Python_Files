@@ -13,8 +13,8 @@ except ImportError:
     _HAS_SHAPELY = False
 
 # === File Paths ===
-INPUT_FILE = r"C:\Users\rajasekhar.palleti\Downloads\cangucu_tobacco_plots.geojson_output.xlsx"
-OUTPUT_FILE = r"C:\Users\rajasekhar.palleti\Downloads\cangucu_tobacco_plots.geojson_output new.xlsx"
+INPUT_FILE = r"C:\Users\rajasekhar.palleti\Downloads\santacruz_tobacco_plots_output.xlsx"
+OUTPUT_FILE = r"C:\Users\rajasekhar.palleti\Downloads\santacruz_tobacco_plots_output new.xlsx"
 
 # === Config ===
 ROUND_OFF_DECIMALS = 16   # area decimals
@@ -168,7 +168,7 @@ def main():
         coord_str = ""
 
         try:
-            coord_str = row.iloc[0]
+            coord_str = row.iloc[7]  # Assuming Raw coordinates are in column H (index 7)
             print(f"  ➡️ Raw coordinate string: {coord_str}")
             coords = ast.literal_eval(str(coord_str))
 

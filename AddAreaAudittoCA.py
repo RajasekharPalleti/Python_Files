@@ -98,13 +98,13 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
 
 
 if __name__ == "__main__":
-    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\cangucu_tobacco_plots.geojson_output1.xlsx"
-    sheet_name = "Sheet2"
-    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\cangucu_tobacco_plots.geojson_output_final.xlsx"
+    input_excel = r"C:\Users\rajasekhar.palleti\Downloads\Dalmia 1 ID area audit (1).xlsx"
+    sheet_name = "Sheet1"
+    output_excel = r"C:\Users\rajasekhar.palleti\Downloads\Dalmia 1 ID area audit (1)_output.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/croppable-areas"
 
     print("Retrieving access token...")
-    token = get_access_token("productdemo", "9108896131", "pmproductdemo", "prod1")
+    token = get_access_token("bat", "6543345612", "Cropin123", "prod1")
     if token:
         print("Access token retrieved successfully.")
         post_data_to_api(api_url, token, input_excel, output_excel, sheet_name)
