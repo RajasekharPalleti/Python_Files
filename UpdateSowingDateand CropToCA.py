@@ -24,8 +24,9 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
     # for index, row in df.iloc[1:4].iterrows():
     for index, row in df.iterrows():
         CA_id = row.iloc[0]  # Column A
-        variety_id = row.iloc[5]  # Column F
-        raw_sowing_date = row.iloc[6]  # Column G
+        # variety_id = row.iloc[5]  # Column F
+        variety_id = 100551
+        raw_sowing_date = row.iloc[9]  # Column G
 
         # Handle if it's already a datetime or string
         if isinstance(raw_sowing_date, pd.Timestamp):  # Excel datetime type
@@ -83,13 +84,13 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
 
 
 if __name__ == "__main__":
-    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AreaAudit_Variety_Add.xlsx"
+    input_excel = r"C:\Users\rajasekhar.palleti\Downloads\bat tenant second set.xlsx"
     sheet_name = "Sheet1"
-    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AreaAudit_Variety_Add_report.xlsx"
+    output_excel = r"C:\Users\rajasekhar.palleti\Downloads\bat tenant second set_DOS_Crop_output.xlsx"
     api_url = "https://cloud.cropin.in/services/farm/api/croppable-areas"
 
     print("Retrieving access token...")
-    token = get_access_token("auxoaidriscolls", "9148981108", "cropin@123", "prod1")
+    token = get_access_token("bat", "6543345612", "Cropin123", "prod1")
     if token:
         print("Access token retrieved successfully.")
         post_data_to_api(api_url, token, input_excel, output_excel, sheet_name)

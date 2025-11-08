@@ -7,7 +7,7 @@ import json
 from GetAuthtoken import get_access_token  # Ensure this module is available
 
 # Get access token
-token = get_access_token("auxoaidriscolls", "9148981108", "cropin@123", "prod1")
+token = get_access_token("dbs", "9871685151", "cropin@123", "prod1")
 
 if token:
     print("✅ Access token retrieved successfully.")
@@ -16,8 +16,8 @@ else:
     exit()
 
 # File path and sheet name
-file_path = r"C:\Users\rajasekhar.palleti\Downloads\Auxo AI Driscolls PR enablement.xlsx"
-sheet_name = "result"  # Change this to your actual sheet name
+file_path = r"C:\Users\rajasekhar.palleti\Downloads\30 Plots.xlsx"
+sheet_name = "Sheet1"  # Change this to your actual sheet name
 
 # Load Excel file with the specific sheet
 df = pd.read_excel(file_path, sheet_name=sheet_name)
