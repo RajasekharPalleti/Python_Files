@@ -2,9 +2,9 @@ import json
 import pandas as pd
 
 # File paths
-input_geojson = r"C:\Users\rajasekhar.palleti\Downloads\santacruz_tobacco_plots.geojson"
+input_geojson = r"C:\Users\rajasekhar.palleti\Downloads\Tobacco_plots_detected.geojson"
 # Output Excel file path
-output_excel = r"C:\Users\rajasekhar.palleti\Downloads\santacruz_tobacco_plots_output.xlsx"
+output_excel = r"C:\Users\rajasekhar.palleti\Downloads\Tobacco_plots_detected_output.xlsx"
 
 # Read the GeoJSON file
 with open(input_geojson, "r", encoding="utf-8") as f:
@@ -40,19 +40,19 @@ for idx, feature in enumerate(data.get("features", []), start=1):
 
     records.append({
         "geometry": json.dumps(wrapped_geometry),  # store as JSON string
-        "pk": properties.get("pk"),
-        "tobacco_type": properties.get("tobacco_type"),
-        "boundary_id_county": properties.get("boundary_id_county"),
-        "county_name": properties.get("county_name"),
-        "boundary_id_state": properties.get("boundary_id_state"),
-        "state_name": properties.get("state_name"),
-        "geometry_raw": (lambda coords: coords[0] if isinstance(coords, list) and len(coords) == 1 else coords)(geometry.get("coordinates")),
+        # "pk": properties.get("pk"),
+        "perimeter": properties.get("perimeter"),
+        # "boundary_id_county": properties.get("boundary_id_county"),
+        # "county_name": properties.get("county_name"),
+        # "boundary_id_state": properties.get("boundary_id_state"),
+        "area": properties.get("area"),
+        "geometry_raw": (lambda coords: coords[0] if isinstance(coords, list) and len(coords) == 1 else coords)(geometry.get("coordinates"))
         # "grower_number": properties.get("grower_number"),
         # "berry_type": properties.get("berry_type"),
         # "producing_area_name": properties.get("producing_area_name"),
         # "field_type": properties.get("field_type"),
         # "review_year": properties.get("review_year"),
-        "planting_date": properties.get("planting_date"),
+        # "planting_date": properties.get("planting_date"),
         # "objectid": properties.get("objectid"),
         # "ranch_latitude": properties.get("ranch_latitude"),
         # "ranch_longitude": properties.get("ranch_longitude"),
