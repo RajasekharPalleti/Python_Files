@@ -24,9 +24,8 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
     # for index, row in df.iloc[1:4].iterrows():
     for index, row in df.iterrows():
         CA_id = row.iloc[0]  # Column A
-        # variety_id = row.iloc[5]  # Column F
-        variety_id = 100551
-        raw_sowing_date = row.iloc[9]  # Column G
+        variety_id = row.iloc[5]  # Column F
+        raw_sowing_date = row.iloc[8]  # Column I
 
         # Handle if it's already a datetime or string
         if isinstance(raw_sowing_date, pd.Timestamp):  # Excel datetime type
@@ -54,7 +53,7 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
             print(f"\nRow {index + 2} — CA_ID: {CA_id}")
 
             # Set values from Excel
-            CA_data["varietyId"] = variety_id
+            # CA_data["varietyId"] = variety_id
             CA_data["sowingDate"] = sowingDate
             print(f"Updated Variety_id: {variety_id}, sowing_date: {sowingDate}")
 
