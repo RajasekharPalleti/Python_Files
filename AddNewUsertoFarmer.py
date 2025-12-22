@@ -1,6 +1,6 @@
 #Author: Rajasekhar Palleti
 # Description: This script reads farmer_id and user_id from an Excel file,
-#              appends the user to the farmer's assignedTo list, and updates the farmer via a PUT API call.
+#              Add the new user to the farmer's assignedTo list by removing existing one, and updates the farmer via a PUT API call.
 
 import requests
 import pandas as pd
@@ -46,15 +46,8 @@ def update_farmer_assigned_to(token, excel_path, sheet_name, output_excel,
             user_dto = user_resp.json()
 
             # Update assignedTo list
-            existing_assigned = farmer_dto.get("assignedTo", [])
-            existing_user_ids = [u.get("id") for u in existing_assigned if isinstance(u, dict)]
-
-            if user_dto.get("id") not in existing_user_ids:
-                print(f" Appending new user ID {user_dto.get('id')} to assignedTo")
-                existing_assigned.append(user_dto)
-                farmer_dto["assignedTo"] = existing_assigned
-            else:
-                print(f"User ID {user_dto.get('id')} already exists, skipping append")
+            farmer_dto["assignedTo"] = user_dto
+            print(f" Assigned new user {user_dto["name"]} to {farmer_dto["firstName"]}")
 
             # Convert DTO to multipart payload
             multipart_data = {

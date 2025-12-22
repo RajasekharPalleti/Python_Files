@@ -67,15 +67,17 @@ def post_data_to_api(token, input_excel, output_excel, sheet_name):
             variety_response.raise_for_status()
             variety_data = variety_response.json()
 
-            crop_stage_to_add = crop_stage_names.get(str(crop_stage_name).lower())
+            crop_stage_template = crop_stage_names.get(str(crop_stage_name).lower())
 
-            if not crop_stage_to_add:
+            if not crop_stage_template:
+                # create stage if missing in master
                 print(f"⚠️ Crop stage '{crop_stage_name}' does not exist. Creating...")
-                crop_stage_to_add = create_crop_stage(token, crop_stage_name, description, days_after_sowing)
-                crop_stage_names[str(crop_stage_name).lower()] = crop_stage_to_add
+                crop_stage_template = create_crop_stage(token, crop_stage_name, description, days_after_sowing)
+                crop_stage_names[str(crop_stage_name).lower()] = crop_stage_template
             else:
-                print(f"✅ Crop stage '{crop_stage_name}' already exists.")
+                print(f"✅ Crop stage '{crop_stage_name}' found in master.")
 
+            # Check if stage already present in variety
             existing_stages = variety_data.get("cropStages", [])
             if any(stage['name'].lower() == str(crop_stage_name).lower() for stage in existing_stages):
                 print(f"⚠️ Crop stage '{crop_stage_name}' already added to variety. Skipping update.")
@@ -83,7 +85,21 @@ def post_data_to_api(token, input_excel, output_excel, sheet_name):
                 df.at[i, 'Response'] = json.dumps(variety_data)
                 continue
 
-            variety_data.setdefault("cropStages", []).append(crop_stage_to_add)
+            # Work on a copy to avoid mutating the master directly
+            stage_to_add = crop_stage_template.copy()
+
+            # If daysAfterSowing is missing/null/empty in the stage object, set it from Excel (if Excel provided it)
+            if pd.notna(days_after_sowing) and (
+                    stage_to_add.get('daysAfterSowing') is None or stage_to_add.get('daysAfterSowing') == ''):
+                # convert to int if possible, otherwise keep as-is
+                try:
+                    stage_value = int(days_after_sowing)
+                except (ValueError, TypeError):
+                    stage_value = days_after_sowing
+                stage_to_add['daysAfterSowing'] = stage_value
+
+            # append and update
+            variety_data.setdefault("cropStages", []).append(stage_to_add)
             update_response = update_variety(token, variety_id, variety_data)
             print(f"✅ Updated variety with new crop stage: {crop_stage_name}")
             df.at[i, 'Status'] = "Success"
@@ -98,6 +114,7 @@ def post_data_to_api(token, input_excel, output_excel, sheet_name):
 
     df.to_excel(output_excel, sheet_name=sheet_name, index=False)
     print(f"\n✅ Processing complete. Output saved to {output_excel}")
+
 
 if __name__ == "__main__":
     input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\AddCropStagesToVarieties.xlsx"
