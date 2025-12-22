@@ -39,7 +39,7 @@ def post_data_to_api(token, input_excel, output_excel, sheet_name):
         try:
             variety_id = int(row['VarietyID']) if pd.notna(row['VarietyID']) else None
             raw_stage_names = row['CropStageName']
-            # description = row['Description'] if pd.notna(row['Description']) else None // Description is not used in this script
+            description = row['Description'] if pd.notna(row['Description']) else None
             days_after_sowing = int(row['daysAfterSowing']) if pd.notna(row['daysAfterSowing']) else None
 
             if pd.isna(variety_id) or pd.isna(raw_stage_names):
