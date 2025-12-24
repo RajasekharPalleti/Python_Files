@@ -19,13 +19,13 @@ headers = {
 }
 
 # === Process each row with iloc ===
-total_area = 11
-
 for i in range(len(df)):
     try:
         croppable_area_id = int(df.iloc[i, 0])   # Column 1
         project_id = int(df.iloc[i, 1])          # Column 2
         split_count = int(df.iloc[i, 4])         # Column 6
+
+        total_area = float(df.iloc[i, 3])          # Column 4
 
         if split_count < 1 or split_count > 50:
             print(f"Skipping row {i+2} → split_count is 0 or invalid")
