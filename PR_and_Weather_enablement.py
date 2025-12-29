@@ -31,7 +31,7 @@ for col in columns_to_check:
 
 # API endpoints
 plot_risk_url = "https://cloud.cropin.in/services/farm/api/croppable-areas/plot-risk/batch"
-# sustainability_url = "https://cloud.cropin.in/services/farm/api/croppable-areas/sustainability/batch?features=WEATHER"
+sustainability_url = "https://cloud.cropin.in/services/farm/api/croppable-areas/sustainability/batch?features=WEATHER"
 
 # API Headers with Authorization Token
 headers = {
@@ -64,7 +64,7 @@ for index, row in df.iloc[:].iterrows():
 
         # Construct payloads
         plot_risk_payload = [{"croppableAreaId": croppable_area_id, "farmerId": None}]
-        # sustainability_payload = [croppable_area_id]
+        sustainability_payload = [croppable_area_id]
 
         # Send Plot Risk API request
         print(f"📡 Sending Plot Risk API request for CroppableAreaId: {croppable_area_id}")
@@ -83,20 +83,20 @@ for index, row in df.iloc[:].iterrows():
 
         time.sleep(0.5)
 
-        # # Send Weather API request
-        # print(f"📡 Sending Weather API request for CroppableAreaId: {croppable_area_id}")
-        # try:
-        #     sustainability_response = requests.post(sustainability_url, json=sustainability_payload, headers=headers)
-        #     sustainability_response.raise_for_status()
-        #     sustainability_json = sustainability_response.json()
-        #     df.at[index, "Weather_response"] = json.dumps(sustainability_json)
-        # except requests.exceptions.RequestException as req_err:
-        #     error_message = str(req_err)
-        #     df.at[index, "Weather_response"] = error_message
-        #     print(f"❌ Weather API request failed: {error_message}")
+        # Send Weather API request
+        print(f"📡 Sending Weather API request for CroppableAreaId: {croppable_area_id}")
+        try:
+            sustainability_response = requests.post(sustainability_url, json=sustainability_payload, headers=headers)
+            sustainability_response.raise_for_status()
+            sustainability_json = sustainability_response.json()
+            df.at[index, "Weather_response"] = json.dumps(sustainability_json)
+        except requests.exceptions.RequestException as req_err:
+            error_message = str(req_err)
+            df.at[index, "Weather_response"] = error_message
+            print(f"❌ Weather API request failed: {error_message}")
 
         # Update the status column
-        if (plot_risk_response.status_code == 200):
+        if (plot_risk_response.status_code == 200 and sustainability_response.status_code == 200):
                 # (plot_risk_response.status_code == 200): of only plot risk
                 # (sustainability_response.status_code == 200): of only Sustainability Weather
             df.at[index, "status"] = "✅ Success"
