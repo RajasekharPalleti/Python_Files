@@ -4,7 +4,6 @@ import json
 import requests
 import pandas as pd
 import time
-from datetime import datetime
 from GetAuthtoken import get_access_token
 
 
