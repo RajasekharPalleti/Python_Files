@@ -91,6 +91,8 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
             # -----------------------
             CA_data["sowingDate"] = sowingDate
             print(f"🌱 Updated sowingDate: {sowingDate}")
+            CA_data["varietyId"] = variety_id
+            print(f"🌾 Updated varietyId: {variety_id}")
 
             time.sleep(1)
 
