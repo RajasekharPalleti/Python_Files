@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import time
 import json
-from GetAuthtoken import get_access_token
+# from GetAuthtoken import get_access_token
 
 # Get API access token
 # token = get_access_token("asp", "", "Cropin@123", "prod1")
@@ -22,6 +22,9 @@ sheet_name = "Sheet1"  # Update this with the actual sheet name
 
 # Load Excel file with the specific sheet
 df = pd.read_excel(file_path, sheet_name=sheet_name)
+
+# Reset index to ensure 0-based integer indexing
+df = df.reset_index(drop=True)
 
 # Ensure necessary columns exist, else add them
 required_columns = ["status", "Response"]
@@ -41,8 +44,9 @@ headers = {
 }
 
 # Iterate over rows
-for index, row in df.iterrows():
+for idx in range(len(df)):
     try:
+        row = df.iloc[idx]
         plantype_name = str(row.iloc[0]).strip()
         cust_attribute_name1 = str(row.iloc[1]).strip()
         cust_attribute_name2 = str(row.iloc[2]).strip()
@@ -51,11 +55,11 @@ for index, row in df.iterrows():
 
         # Skip empty plantype_name
         if not plantype_name:
-            print(f"⚠️ Skipping row {index + 1}: Plantype Name is missing.")
-            df.at[index, "status"] = "⚠️ Skipped - Missing Name"
+            print(f"⚠️ Skipping row {idx + 1}: Plantype Name is missing.")
+            df.loc[idx, "status"] = "⚠️ Skipped - Missing Name"
             continue
 
-        print(f"🔄 Processing row {index + 1}: PlanType = {plantype_name}")
+        print(f"🔄 Processing row {idx + 1}: PlanType = {plantype_name}")
 
         # Construct payload
         payload = {
@@ -400,28 +404,28 @@ for index, row in df.iterrows():
             response = requests.post(api_url, json=payload, headers=headers, timeout=10)
             response.raise_for_status()
             response_json = response.json()
-            df.at[index, "Response"] = json.dumps(response_json)
+            df.loc[idx, "Response"] = json.dumps(response_json)
 
             if response.status_code == 201:
                 print(f"✅ PlanType '{plantype_name}' created successfully.")
-                df.at[index, "status"] = "✅ Success"
+                df.loc[idx, "status"] = "✅ Success"
             else:
                 print(f"❌ PlanType creation failed for '{plantype_name}'. Status: {response.status_code}")
-                df.at[index, "status"] = f"❌ Failed: {response.status_code}"
+                df.loc[idx, "status"] = f"❌ Failed: {response.status_code}"
 
         except requests.exceptions.Timeout:
             print(f"⏳ Timeout error for {plantype_name}. Retrying...")
-            df.at[index, "status"] = "⏳ Timeout - Retry needed"
+            df.loc[idx, "status"] = "⏳ Timeout - Retry needed"
         except requests.exceptions.RequestException as req_err:
             error_message = str(req_err)
-            df.at[index, "status"] = f"❌ Request Failed: {error_message}"
+            df.loc[idx, "status"] = f"❌ Request Failed: {error_message}"
             print(f"❌ Request error for {plantype_name}: {error_message}")
 
         time.sleep(0.5)  # Pause before the next iteration
 
     except Exception as e:
-        print(f"⚠️ Unexpected error at row {index + 1}: {str(e)}")
-        df.at[index, "status"] = f"⚠️ Error: {str(e)}"
+        print(f"⚠️ Unexpected error at row {idx + 1}: {str(e)}")
+        df.loc[idx, "status"] = f"⚠️ Error: {str(e)}"
 
 # Save updated Excel file
 print("Data 📁 Processing to Excel")
