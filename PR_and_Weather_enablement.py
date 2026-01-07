@@ -58,12 +58,12 @@ def extract_sr_plot_id(response_json):
 for index, row in df.iloc[:].iterrows():
     try:
         croppable_area_id = str(row.iloc[0]).strip()
-        # farmer_id = str(row.iloc[1]).strip()
+        farmer_id = str(row.iloc[1]).strip()
 
         print(f"🔄 Processing row {index + 1}: CroppableAreaId = {croppable_area_id}")
 
         # Construct payloads
-        plot_risk_payload = [{"croppableAreaId": croppable_area_id, "farmerId": None}]
+        plot_risk_payload = [{"croppableAreaId": croppable_area_id, "farmerId": farmer_id}]
         sustainability_payload = [croppable_area_id]
 
         # Send Plot Risk API request
