@@ -25,15 +25,18 @@ def process_farmers(api_url, token, excel_file, sheet_name):
     headers = {"Authorization": f"Bearer {token}"}
 
     # Add 'Status' and 'Failure Reason' columns if not present
-    headers_row = [sheet.cell(1, col).value for col in range(1, sheet.max_column + 1)]
+    headers_row = [sheet.cell(row=1, column=col).value for col in range(1, sheet.max_column + 1)]
 
+    # Add missing header columns at the end (avoid overwriting if adding both)
+    next_col = sheet.max_column + 1
     if "Status" not in headers_row:
-        sheet.cell(1, sheet.max_column + 1).value = "Status"
+        sheet.cell(row=1, column=next_col, value="Status")
+        next_col += 1
     if "Failure Reason" not in headers_row:
-        sheet.cell(1, sheet.max_column + 1).value = "Failure Reason"
+        sheet.cell(row=1, column=next_col, value="Failure Reason")
 
-    # Refresh header index
-    headers_row = [sheet.cell(1, col).value for col in range(1, sheet.max_column + 1)]
+    # Refresh header index after potential changes
+    headers_row = [sheet.cell(row=1, column=col).value for col in range(1, sheet.max_column + 1)]
     status_col = headers_row.index("Status") + 1
     failure_reason_col = headers_row.index("Failure Reason") + 1
 
@@ -41,10 +44,12 @@ def process_farmers(api_url, token, excel_file, sheet_name):
         farmer_id = sheet.cell(row=row, column=1).value  # Farmer ID in column 1
         tags_to_remove = sheet.cell(row=row, column=2).value  # Tags to remove in column 2
 
-        if tags_to_remove:
-            tags_to_remove = [tag.strip() for tag in tags_to_remove.split(",")]
-        else:
+        # Normalize tags_to_remove to a list of strings. Accepts strings, numbers, rich text, etc.
+        if tags_to_remove is None or (isinstance(tags_to_remove, str) and tags_to_remove.strip() == ""):
             tags_to_remove = []
+        else:
+            tags_str = str(tags_to_remove)
+            tags_to_remove = [tag.strip() for tag in tags_str.split(",") if tag.strip()]
 
         print(f"Processing Farmer ID {farmer_id} - Removing Tags: {tags_to_remove}")
 

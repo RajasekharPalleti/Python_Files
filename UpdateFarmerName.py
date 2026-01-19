@@ -1,93 +1,106 @@
+import json
 import requests
-import pandas as pd
 import time
+import pandas as pd
+from concurrent.futures import ThreadPoolExecutor
 from GetAuthtoken import get_access_token
 
-# Constants and configurations
-EXCEL_FILE = 'C:\\Users\\rajasekhar.palleti\\Downloads\\farmer_data.xlsx'  # Path to your Excel file
-GET_API_URL = 'https://cloud.cropin.in/services/farm/api/farmers/{farmer_id}'  # Replace with actual GET API endpoint
-PUT_API_URL = 'https://cloud.cropin.in/services/farm/api/farmers/sync'  # Replace with actual PUT API endpoint
-BEARER_TOKEN = get_access_token('your_tenant_code', 'your_username', 'your_password', 'prod1')  # Replace with actual credentials
-WAIT_TIME = 0.4  # Time in seconds to wait between API hits
-ITERATIONS = 222  # Total number of iterations
+def process_chunk(df_chunk, api_url, token, thread_id):
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    results = []
 
-# Headers for API requests
-HEADERS = {
-    'Authorization': f'Bearer {BEARER_TOKEN}',
-    'Content-Type': 'application/json',
-}
+    for index, row in df_chunk.iterrows():
+        print(f"[Thread {thread_id}] Processing row index: {index}")
+
+        farmer_id = row[0]  # Column A: Farmer ID
+        farmer_name = row[1]  # Column B: Farmer name
 
 
-def get_farmer_details(farmer_id):
-    """Fetch farmer details using GET API."""
-    url = GET_API_URL.format(farmer_id=farmer_id)
-    response = requests.get(url, headers=HEADERS)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        print(f"Failed to fetch details for Farmer ID: {farmer_id}. Status Code: {response.status_code}")
-        return None
+        status = ""
+        response_str = ""
 
+        if pd.isna(farmer_id) or pd.isna(farmer_name):
+            status = "Skipped: Missing Data"
+            results.append((index, status, response_str))
+            continue
 
-def update_farmer_details(farmer_id, updated_data):
-    """Send updated farmer details using PUT API."""
-    url = PUT_API_URL.format(farmer_id=farmer_id)
-    response = requests.put(url, headers=HEADERS, json=updated_data)
-    if response.status_code in [200, 204]:
-        print(f"Successfully updated Farmer ID: {farmer_id}")
-        return True
-    else:
-        print(f"Failed to update Farmer ID: {farmer_id}. Status Code: {response.status_code}")
-        return False
+        try:
+            print(f"[Thread {thread_id}] Getting asset for: {farmer_id}")
+            get_response = requests.get(f"{api_url}/{farmer_id}", headers=headers)
+            get_response.raise_for_status()
+            farmer_data = get_response.json()
 
+            if "firstName" in farmer_data:
+                farmer_data["firstName"] = farmer_name
+                print(f"[Thread {thread_id}] Modified data for: {farmer_id}")
+            else:
+                status = "Failed: No data"
+                results.append((index, status, response_str))
+                continue
 
-def main():
-    # Load Excel data
-    print("Reading Excel file...")
-    try:
-        data = pd.read_excel(EXCEL_FILE)
-        if 'A' not in data.columns or 'C' not in data.columns:
-            raise ValueError("Excel file must contain 'A' (farmer_id) and 'C' (new_firstName) columns")
-        # Ensure column D for update status exists
-        if 'D' not in data.columns:
-            data['D'] = ''
-    except Exception as e:
-        print(f"Error reading Excel file: {e}")
-        return
+            time.sleep(0.2)
 
-    # Iterate through rows up to the specified iteration limit
-    for i in range(min(ITERATIONS, len(data))):
-        farmer_id = data.at[i, 'A']
-        new_first_name = data.at[i, 'C']
+            multipart_data = {
+                "dto": (None, json.dumps(farmer_data), "application/json")
+            }
 
-        print(f"Iteration {i + 1}: Processing Farmer ID: {farmer_id}")
+            put_response = requests.put(api_url, headers=headers, files=multipart_data)
+            put_response.raise_for_status()
 
-        # Step 1: Get farmer details
-        farmer_details = get_farmer_details(farmer_id)
-        data['D'] = data['D'].astype(object)
-        if not farmer_details:
-            data.at[i, 'D'] = 'GET Failed'
-            continue  # Skip to the next iteration if GET fails
+            status = "Success"
+            response_str = put_response.text[:500]  # Limit long responses
 
-        # Step 2: Check and modify the 'firstName' field
-        current_first_name = farmer_details.get('firstName', '')
-        if current_first_name != new_first_name:
-            farmer_details['firstName'] = new_first_name
-            # Step 3: Update farmer details via PUT API
-            success = update_farmer_details(farmer_id, farmer_details)
-            data.at[i, 'D'] = 'Updated' if success else 'PUT Failed'
-        else:
-            print(f"No update needed for Farmer ID: {farmer_id}")
-            data.at[i, 'D'] = 'No Update Needed'
+            print(f"[Thread {thread_id}] Updated: {farmer_id}")
 
-        # Step 4: Wait for 1 second before the next API call
-        time.sleep(WAIT_TIME)
+        except requests.exceptions.RequestException as e:
+            status = f"Failed: {str(e)}"
+            response_str = str(e)
+            print(f"[Thread {thread_id}] Failed for: {farmer_id}")
 
-    # Save the updated Excel file
-    print("Saving updated Excel file...")
-    data.to_excel(EXCEL_FILE, index=False)
-    print("Processing completed!")
+        time.sleep(0.2)
+        results.append((index, status, response_str))
 
+    return results
+
+def post_data_with_multithreading(api_url, token, input_excel, output_excel):
+    df = pd.read_excel(input_excel)
+    df["Status"] = ""
+    df["Response"] = ""
+
+    # Split the DataFrame into two chunks using iloc[]
+    mid_index = len(df) // 2
+    chunk1 = df.iloc[:mid_index]
+    chunk2 = df.iloc[mid_index:]
+
+    # Use ThreadPoolExecutor to run 2 threads
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        future1 = executor.submit(process_chunk, chunk1, api_url, token, 1)
+        future2 = executor.submit(process_chunk, chunk2, api_url, token, 2)
+
+        results = future1.result() + future2.result()
+
+    # Update the original dataframe with the results
+    for idx, status, response in results:
+        df.at[idx, "Status"] = status
+        df.at[idx, "Response"] = response
+
+    # Save the updated DataFrame
+    df.to_excel(output_excel, index=False)
+    print(f"Updated Excel saved at: {output_excel}")
 
 if __name__ == "__main__":
-    main()
+    tenant_code = "gpi"
+    input_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\Farmer Data_Project GPI 3.xlsx"
+    output_excel = "C:\\Users\\rajasekhar.palleti\\Downloads\\Farmer Data_Project GPI_Updated 3.xlsx"
+    api_url = "https://cloud.cropin.in/services/farm/api/farmers"
+
+    print("Retrieving token...")
+    token = get_access_token(tenant_code, "9120232024", "Anilkumarkolla", "prod1")
+
+    if token:
+        print("Token retrieved successfully.")
+        post_data_with_multithreading(api_url, token, input_excel, output_excel)
+    else:
+        print("Token retrieval failed.")
