@@ -46,7 +46,7 @@ def fetch_asset_tag_map(token):
     """
     Fetch all ASSET tags from the Master Tag API.
     """
-    url = "https://cloud.cropin.in/services/master/api/filter?type=ASSET&size=5000"
+    url = "https://cloud.cropin.in/services/master/api/filter?type=ASSET&size=10000"
     headers = {"Authorization": f"Bearer {token}"}
 
     response = requests.get(url, headers=headers)

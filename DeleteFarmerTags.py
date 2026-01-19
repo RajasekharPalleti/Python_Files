@@ -40,7 +40,7 @@ def normalize_tag_name(name: str) -> str:
 # Fetch FARMER tags (Name → ID mapping)
 # ------------------------------------------------------------
 def fetch_farmer_tag_map(token):
-    url = "https://cloud.cropin.in/services/master/api/filter?type=FARMER&size=5000"
+    url = "https://cloud.cropin.in/services/master/api/filter?type=FARMER&size=10000"
     headers = {"Authorization": f"Bearer {token}"}
 
     response = requests.get(url, headers=headers)
