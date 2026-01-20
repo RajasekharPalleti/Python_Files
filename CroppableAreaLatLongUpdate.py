@@ -41,40 +41,46 @@ def post_data_to_api(api_url, token, input_excel, output_excel, sheet_name):
             CA_data = get_response.json()
             print(f"\nRow {index + 2} — CA_ID: {CA_id}")
 
-            lat_long = {
-                "geoInfo": {
-                    "type": "FeatureCollection",
-                    "features": [
-                        {
-                            "type": "Feature",
-                            "properties": {},
-                            "geometry": {
-                                "type": "MultiPolygon",
-                                "coordinates": []
+            CA_data["latitude"] = Latitude
+            CA_data["longitude"] = Longitude
+
+            # Condition to check if CA is area audited then updating accordingly
+            if (
+                "areaAudit" in CA_data
+                and CA_data["areaAudit"] is not None
+                and CA_data["areaAudit"].get("latitude") is not None
+                and CA_data["areaAudit"].get("longitude") is not None):
+
+                CA_data["areaAudit"]["latitude"] = Latitude
+                CA_data["areaAudit"]["longitude"] = Longitude
+                CA_data["cropAudited"] = True
+            else:
+                CA_data["areaAudit"] = {
+                    "geoInfo": {
+                        "type": "FeatureCollection",
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "properties": {},
+                                "geometry": {
+                                    "type": "MultiPolygon",
+                                    "coordinates": []
+                                }
                             }
-                        }
-                    ]
-                },
-                "latitude": Latitude,
-                "longitude": Longitude,
-                "altitude": None
-            }
+                        ]
+                    },
+                    "latitude": Latitude,
+                    "longitude": Longitude,
+                    "altitude": None
+                }
+                CA_data["cropAudited"] = False
 
-            # Ensure areAudit Key exist
-            if "areaAudit" not in CA_data:
-                print("areaAudit key missing. Adding...")
-                CA_data["areaAudit"] = None
-
-            # Set values from Excel
-            CA_data["areaAudit"] = lat_long
-            CA_data["cropAudited"] = False  # uncomment this line if script got the cropAudited is not null error
             print(f"Updated Lat: {Latitude}, Long: {Longitude}")
 
             time.sleep(1)
-
             put_response = requests.put(f"{api_url}/area-audit", headers=headers, data=json.dumps(CA_data))
-            if put_response.status_code != 200:
-                df.at[index, "Status"] = f"PUT Failed: {put_response.status_code}"
+            if put_response.status_code not in (200, 204):
+                df.at[index, "Status"] = "Failed"
                 print(put_response)
                 df.at[index, "CA_Response"] = put_response.text
                 print(f"PUT failed for CA_ID: {CA_id} — Status Code: {put_response.status_code}")
