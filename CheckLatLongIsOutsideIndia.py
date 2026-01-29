@@ -1,7 +1,5 @@
-import os
 import zipfile
 from pathlib import Path
-from typing import Optional
 
 import requests
 from tqdm import tqdm
