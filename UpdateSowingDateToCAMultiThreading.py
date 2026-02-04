@@ -9,6 +9,59 @@ from GetAuthtoken import get_access_token
 
 lock = threading.Lock()  # To avoid race conditions when writing to DataFrame
 
+
+def parse_sowing_date(raw_date):
+    """
+    Parse a variety of input sowing date formats and return an ISO-like
+    string expected by the API: YYYY-MM-DDTHH:MM:SS.000+0000
+
+    Supported inputs:
+    - Excel serial (int/float)
+    - pandas Timestamp / datetime
+    - Strings in formats: dd/MM/yyyy, dd-MM-yyyy, yyyy-MM-dd, yyyy-MM-ddTHH:mm:ss,
+      yyyy-MM-dd HH:mm:ss and others that pandas can infer (dayfirst=True)
+
+    Returns:
+    - formatted string on success
+    - None on failure or if input is NaN
+    """
+    if pd.isna(raw_date):
+        return None
+
+    # If it's already a pandas Timestamp or python datetime
+    try:
+        if isinstance(raw_date, (pd.Timestamp,)):
+            parsed = raw_date
+        else:
+            # Handle Excel serial numbers (commonly floats/ints)
+            if isinstance(raw_date, (int, float)):
+                try:
+                    # pandas supports origin param to interpret Excel serials
+                    # Use Timestamp as origin and uppercase 'D' for day unit to satisfy pandas signature
+                    parsed = pd.to_datetime(raw_date, unit="D", origin=pd.Timestamp("1899-12-30"))
+                except Exception:
+                    # Fallback: add days to excel epoch
+                    parsed = pd.Timestamp("1899-12-30") + pd.to_timedelta(raw_date, unit="D")
+            else:
+                # Let pandas infer format; dayfirst=True handles dd/MM/yyyy correctly
+                parsed = pd.to_datetime(raw_date, dayfirst=True, errors="raise")
+
+        # Ensure we have a Timestamp
+        parsed = pd.Timestamp(parsed)
+
+        # If no time component present, normalize to 00:00:00
+        if parsed.time() == pd.Timestamp("00:00:00").time() and parsed.nanosecond == 0:
+            parsed = parsed.replace(hour=0, minute=0, second=0, microsecond=0)
+
+        # Output in required format (keep naive as UTC-equivalent with +0000)
+        out = parsed.strftime("%Y-%m-%dT%H:%M:%S") + ".000+0000"
+        return out
+
+    except Exception as e:
+        print(f"❌ Invalid sowing date format: {raw_date} | Error: {e}")
+        return None
+
+
 def process_rows(df, start_idx, end_idx, api_url, token):
     headers = {
         "Authorization": f"Bearer {token}",
@@ -18,11 +71,14 @@ def process_rows(df, start_idx, end_idx, api_url, token):
     for index in range(start_idx, end_idx):
         row = df.iloc[index]
         CA_id = row.iloc[0]
-        sowing_Date = row.iloc[1]
+        sowing_raw = row.iloc[1]
 
-        if pd.isna(CA_id) or pd.isna(sowing_Date):
+        # Parse/normalize the sowing date
+        sowing_Date = parse_sowing_date(sowing_raw)
+
+        if pd.isna(CA_id) or sowing_Date is None:
             with lock:
-                df.at[index, "Status"] = "Skipped: Missing Data"
+                df.at[index, "Status"] = "Skipped: Missing/Invalid Data"
             continue
 
         try:
@@ -40,6 +96,7 @@ def process_rows(df, start_idx, end_idx, api_url, token):
                 print("sowingDate key missing. Adding...")
                 CA_data["sowingDate"] = None
 
+            # Set the normalized/validated date string
             CA_data["sowingDate"] = sowing_Date
 
             time.sleep(0.4)
