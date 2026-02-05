@@ -3,7 +3,7 @@ import requests
 import time
 import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
-# from GetAuthtoken import get_access_token
+from GetAuthtoken import get_access_token
 
 def parse_comma_ids(cell):
     """
@@ -93,7 +93,7 @@ def process_chunk(df_chunk, api_url, token, thread_id, timeout=30):
             response_str = str(e)
             print(f"[Thread {thread_id}] Request error for farmer {farmer_id}: {e}")
 
-        time.sleep(0.5)
+        time.sleep(1)
         results.append((index, status, response_str))
 
     return results
@@ -135,8 +135,7 @@ if __name__ == "__main__":
     API_URL = "https://cloud.cropin.in/services/farm/api/farmers"
 
     print("Retrieving token...")
-    # token = get_access_token("asp", "9649964096", "123456", "prod1")
-    token = ""
+    token = get_access_token("asp", "9649964096", "123456", "prod1")
     if token:
         print("Token retrieved successfully.")
         post_data_with_multithreading(API_URL, token, INPUT_EXCEL, OUTPUT_EXCEL)
