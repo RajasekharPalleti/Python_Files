@@ -296,6 +296,8 @@ if __name__ == "__main__":
 
     OUTPUT_EXCEL = r"C:\Users\rajasekhar.palleti\Downloads\Delete_Project_Assets_Output.xlsx"
 
+    batch_size = 100
+
     print("🔐 Fetching access token...")
 
     token = get_access_token("asp", "9148981108", "cropin@123", "prod1")
@@ -312,5 +314,5 @@ if __name__ == "__main__":
         INPUT_EXCEL,
         SHEET_NAME,
         OUTPUT_EXCEL,
-        batch_size=100
+        batch_size
     )
