@@ -15,7 +15,7 @@ def chunk_list(lst, size):
 
 
 def ensure_col(df, col_name):
-    """Ensure Excel column exists"""
+    """Ensure column exists in dataframe"""
     if col_name not in df.columns:
         df[col_name] = ""
 
@@ -31,12 +31,10 @@ def close_and_delete_batch(base_url, token, project_id, asset_ids_chunk, ca_ids_
     }
 
     ca_ids_param = ",".join(map(str, ca_ids_chunk))
-    asset_ids_param = ",".join(map(str, asset_ids_chunk))
 
-    # =====================================================
+    # -------------------------------------------------------------
     # CLOSE CA API
-    # =====================================================
-
+    # -------------------------------------------------------------
     print("\n🔒 Closing croppable areas...")
 
     close_url = f"{base_url}/croppable-areas/closed"
@@ -74,6 +72,8 @@ def close_and_delete_batch(base_url, token, project_id, asset_ids_chunk, ca_ids_
         response_ids = set(ca_status_map.keys())
         missed_ids = processed_ids - response_ids
 
+        missing_ids_str = ",".join(missed_ids) if missed_ids else ""
+
         print(f"📤 Processed IDs ({len(processed_ids)}): {', '.join(processed_ids)}")
         print(f"📥 Response IDs  ({len(response_ids)}): {', '.join(response_ids) if response_ids else 'None'}")
         print(f"📝 IDs missed in response ({len(missed_ids)}): {', '.join(missed_ids) if missed_ids else 'None'}")
@@ -90,12 +90,13 @@ def close_and_delete_batch(base_url, token, project_id, asset_ids_chunk, ca_ids_
         elapsed_close = time.time() - start_time_close
         close_status_code = "Error"
 
+        missing_ids_str = ",".join(ca_ids_chunk)
+
         print(f"❌ Close Error: {str(e)} in {elapsed_close:.2f}s")
 
-    # =====================================================
+    # -------------------------------------------------------------
     # SAVE CLOSE STATUS
-    # =====================================================
-
+    # -------------------------------------------------------------
     for row_idx, df_index in enumerate(idx_chunk):
 
         current_ca = str(ca_ids_chunk[row_idx])
@@ -107,12 +108,13 @@ def close_and_delete_batch(base_url, token, project_id, asset_ids_chunk, ca_ids_
         else:
             df.at[df_index, "closed API status"] = "Not found in response"
 
+        df.at[df_index, "CA ids missing in response"] = missing_ids_str
+
     time.sleep(delay_time)
 
-    # =====================================================
-    # FILTER CLOSED CA
-    # =====================================================
-
+    # -------------------------------------------------------------
+    # FILTER CLOSED CA FOR DELETE
+    # -------------------------------------------------------------
     ca_delete = []
     asset_delete = []
     idx_delete = []
@@ -133,10 +135,9 @@ def close_and_delete_batch(base_url, token, project_id, asset_ids_chunk, ca_ids_
         print("⚠️ No croppable areas were closed. Skipping delete.")
         return
 
-    # =====================================================
+    # -------------------------------------------------------------
     # DELETE PROJECT ASSETS
-    # =====================================================
-
+    # -------------------------------------------------------------
     print("\n🗑 Deleting project-assets...")
 
     delete_url = f"{base_url}/projects/{project_id}/project-assets/selected-ids"
@@ -222,19 +223,21 @@ def process_excel_batches(base_url, token, input_excel, sheet_name, output_excel
     ensure_col(df, "delete API status")
     ensure_col(df, "closed_api_http_status")
     ensure_col(df, "delete_api_http_status")
-
-    df[project_col] = df[project_col].astype(str).str.strip()
-    df[asset_col] = df[asset_col].astype(str).str.strip()
-    df[ca_col] = df[ca_col].astype(str).str.strip()
+    ensure_col(df, "CA ids missing in response")
 
     df = df[df[ca_col].notna() & (df[ca_col] != "")]
     df.reset_index(drop=True, inplace=True)
+
+    total_ca = len(df)
+    processed_ca = 0
+
+    print(f"\n📊 Total CA to process: {total_ca}")
 
     grouped = df.groupby(project_col)
 
     total_projects = len(grouped)
 
-    print(f"\n🔄 Found {total_projects} projects to process.")
+    print(f"🔄 Found {total_projects} projects to process.")
 
     for p_idx, (project_id, group) in enumerate(grouped, 1):
 
@@ -251,7 +254,6 @@ def process_excel_batches(base_url, token, input_excel, sheet_name, output_excel
 
             print(f"\n🔁 Batch {offset+1} | Items: {len(asset_chunk)}")
 
-            # Row level logs (same as web code)
             for row_idx, (ca_id, asset_id) in enumerate(zip(ca_chunk, asset_chunk)):
 
                 excel_row = idx_chunk[row_idx] + 2
@@ -273,6 +275,10 @@ def process_excel_batches(base_url, token, input_excel, sheet_name, output_excel
                 df
             )
 
+            processed_ca += len(ca_chunk)
+
+            print(f"📊 Progress: {processed_ca} / {total_ca} CA processed")
+
             time.sleep(delay_time)
 
     print(f"\n💾 Saving output file to: {output_excel}")
@@ -282,10 +288,9 @@ def process_excel_batches(base_url, token, input_excel, sheet_name, output_excel
     print("🎯 Process completed successfully.")
 
 
-# =====================================================
+# -------------------------------------------------------------
 # MAIN
-# =====================================================
-
+# -------------------------------------------------------------
 if __name__ == "__main__":
 
     BASE_URL = "https://cloud.cropin.in/services/farm/api"
@@ -296,17 +301,15 @@ if __name__ == "__main__":
 
     OUTPUT_EXCEL = r"C:\Users\rajasekhar.palleti\Downloads\Delete_Project_Assets_Output.xlsx"
 
-    batch_size = 100
-
     print("🔐 Fetching access token...")
 
     token = get_access_token("asp", "9148981108", "cropin@123", "prod1")
 
     if not token:
-        print("❌ Failed to retrieve access token. Exiting.")
-        raise SystemExit(1)
+        print("❌ Failed to retrieve access token.")
+        exit()
 
-    print("✅ Token retrieved successfully. Starting execution...")
+    print("✅ Token retrieved. Starting execution...")
 
     process_excel_batches(
         BASE_URL,
@@ -314,5 +317,5 @@ if __name__ == "__main__":
         INPUT_EXCEL,
         SHEET_NAME,
         OUTPUT_EXCEL,
-        batch_size
+        batch_size=50
     )
